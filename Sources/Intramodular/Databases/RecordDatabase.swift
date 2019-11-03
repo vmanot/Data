@@ -9,14 +9,14 @@ import Swallow
 
 public protocol RecordDatabase: Database {
     associatedtype Record: DatabaseRecord
-
+    
     associatedtype RecordCreateProducer: Publisher where RecordCreateProducer.Output == Record
     associatedtype RecordFetchProducer: Publisher where RecordFetchProducer.Output == Record
     associatedtype RecordSaveProducer: Publisher where RecordSaveProducer.Output == Record
     associatedtype RecordUpdateProducer: Publisher where RecordUpdateProducer.Output == Record
     associatedtype RecordDeleteProducer: Publisher where RecordDeleteProducer.Output == Void
     associatedtype RecordListenProducer: Publisher where RecordListenProducer.Output == Record?
-
+    
     func createRecord(with data: Record.Data, type: Record.`Type`) -> RecordCreateProducer
     func updateRecord(_ record: Record, with data: Record.Data) -> RecordUpdateProducer
     func deleteRecord(_ record: Record) -> RecordDeleteProducer

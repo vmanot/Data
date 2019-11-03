@@ -36,7 +36,7 @@ public struct DateValue<Formatter: DateValueCodableStrategy>: Codable {
 
 @propertyWrapper
 public struct OptionalDateValue<Formatter: DateValueCodableStrategy>: Codable {
-    private let value: Formatter.RawValue?
+    private var value: Formatter.RawValue? = nil
     
     public var wrappedValue: Date?
     
@@ -46,6 +46,14 @@ public struct OptionalDateValue<Formatter: DateValueCodableStrategy>: Codable {
     }
     
     public init(from decoder: Decoder) throws {
+        do {
+            guard try !decoder.decodeNil() else {
+                return
+            }
+        } catch(_) {
+            
+        }
+        
         self.value = try Formatter.RawValue(from: decoder)
         self.wrappedValue = try Formatter.decode(try Formatter.RawValue(from: decoder))
     }
