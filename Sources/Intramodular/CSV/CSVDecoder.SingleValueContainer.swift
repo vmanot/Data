@@ -6,16 +6,12 @@ import Foundation
 import Swallow
 import Swift
 
-extension _CSVDecoder {
+extension CSVDecoder._Decoder {
     final class SingleValueContainer {
-        // Internal
         let codingPath: [CodingKey]
         
-        // Private
         private let headers: [CSVHeader]
         private let rows: [String]
-        
-        // MARK: Initialization
         
         required init(headers: [CSVHeader], rows: [String], codingPath: [CodingKey])
         {
@@ -26,7 +22,7 @@ extension _CSVDecoder {
     }
 }
 
-extension _CSVDecoder.SingleValueContainer: SingleValueDecodingContainer {
+extension CSVDecoder._Decoder.SingleValueContainer: SingleValueDecodingContainer {
     func decodeNil() -> Bool {
         TODO.unimplemented
     }

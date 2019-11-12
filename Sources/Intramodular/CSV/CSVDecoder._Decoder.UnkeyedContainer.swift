@@ -6,14 +6,14 @@ import Foundation
 import Swallow
 import Swift
 
-extension _CSVDecoder {
+extension CSVDecoder._Decoder {
     final class UnkeyedContainer {
         var currentIndex = 0
         let codingPath: [CodingKey]
         
         private let headers: [CSVHeader]
         private let rows: [String]
-
+        
         required init(headers: [CSVHeader], rows: [String], codingPath: [CodingKey])  {
             self.headers = headers
             self.rows = rows
@@ -22,7 +22,7 @@ extension _CSVDecoder {
     }
 }
 
-extension _CSVDecoder.UnkeyedContainer: UnkeyedDecodingContainer {
+extension CSVDecoder._Decoder.UnkeyedContainer: UnkeyedDecodingContainer {
     var count: Int? {
         return self.rows.count
     }
@@ -45,7 +45,7 @@ extension _CSVDecoder.UnkeyedContainer: UnkeyedDecodingContainer {
         }
         
         let row = self.rows[self.currentIndex]
-        let decoder = _CSVDecoder(headers: self.headers, rows: [row])
+        let decoder = CSVDecoder._Decoder(headers: self.headers, rows: [row])
         
         return try T(from: decoder)
     }

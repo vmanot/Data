@@ -6,13 +6,13 @@ import Foundation
 import Swallow
 import Swift
 
-extension _CSVDecoder {
+extension CSVDecoder._Decoder {
     final class KeyedContainer<Key: CodingKey>  {
         let codingPath: [CodingKey]
         
         private let headers: [CSVHeader]
         private let values: [String]
-
+        
         required init(headers: [CSVHeader], row: String, codingPath: [CodingKey]) {
             self.headers = headers
             self.codingPath = codingPath
@@ -23,7 +23,7 @@ extension _CSVDecoder {
     }
 }
 
-extension _CSVDecoder.KeyedContainer: KeyedDecodingContainerProtocol {
+extension CSVDecoder._Decoder.KeyedContainer: KeyedDecodingContainerProtocol {
     var allKeys: [Key] {
         return self.headers.compactMap({ (header) -> Key? in
             return Key(stringValue: header.key)
@@ -36,9 +36,9 @@ extension _CSVDecoder.KeyedContainer: KeyedDecodingContainerProtocol {
         }
         
         guard let unwrappedHeader = header,
-              unwrappedHeader.index < self.values.count,
-              !self.values[unwrappedHeader.index].isEmpty else {
-            return false
+            unwrappedHeader.index < self.values.count,
+            !self.values[unwrappedHeader.index].isEmpty else {
+                return false
         }
         
         return true
@@ -61,13 +61,13 @@ extension _CSVDecoder.KeyedContainer: KeyedDecodingContainerProtocol {
     
     func decode<T: LosslessStringConvertible>(_ type: T.Type, forKey key: Key) throws -> T where T: Decodable {
         let string = try self.decode(String.self, forKey: key)
-
+        
         guard let value = T(string) else  {
             let context = DecodingError.Context(
                 codingPath: self.codingPath,
                 debugDescription: "Components: \(self.values) Headers: \(self.headers)"
             )
-
+            
             throw DecodingError.typeMismatch(type, context)
         }
         
@@ -76,9 +76,9 @@ extension _CSVDecoder.KeyedContainer: KeyedDecodingContainerProtocol {
     
     func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T: Decodable  {
         let row = self.values.joined()
-        let decoder = _CSVDecoder(headers: self.headers, rows: [row])
+        let decoder = CSVDecoder._Decoder(headers: self.headers, rows: [row])
         let value = try T(from: decoder)
-
+        
         return value
     }
     

@@ -4,7 +4,7 @@
 
 import Swift
 
-struct CSVHeader {
+struct CSVHeader: Codable, Hashable {
     let index: Int
     let key: String
 
