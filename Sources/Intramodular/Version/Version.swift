@@ -7,6 +7,9 @@ import Swallow
 import Swift
 
 public struct Version {
+    fileprivate static let strictParser = VersionParser(strict: true)
+    fileprivate static let lenientParser = VersionParser(strict: false)
+
     /// The major component of the version.
     ///
     /// - Note:
@@ -62,12 +65,15 @@ public struct Version {
     
     /// An optional build component of the version.
     public var build: String?
-
-    fileprivate static let strictParser = VersionParser(strict: true)
-    fileprivate static let lenientParser = VersionParser(strict: false)
-    
+        
     /// Initialize a version from its components.
-    public init(major: Int = 0, minor: Int? = nil, patch: Int? = nil, prerelease: String? = nil, build: String? = nil) {
+    public init(
+        major: Int = 0,
+        minor: Int? = nil,
+        patch: Int? = nil,
+        prerelease: String? = nil,
+        build: String? = nil
+    ) {
         self.major = major
         self.minor = minor
         self.patch = patch
@@ -98,7 +104,7 @@ public struct Version {
         copy.canonicalize()
         return copy
     }
-
+    
     fileprivate static func compare<T: Comparable>(lhs: T, rhs: T) -> ComparisonResult {
         if lhs < rhs {
             return .orderedAscending
@@ -108,7 +114,7 @@ public struct Version {
             return .orderedSame
         }
     }
-
+    
     fileprivate static func compareNumeric(lhs: String, rhs: String) -> ComparisonResult {
         let lhsComponents = lhs.components(separatedBy: ".")
         let rhsComponents = rhs.components(separatedBy: ".")
@@ -129,8 +135,56 @@ public struct Version {
     }
 }
 
+extension Version {
+    public static func valid(string: String, strict: Bool = false) -> Bool {
+        return string.matches(Version.strictParser.versionRegex)
+    }
+}
 
-// MARK: - Equatable
+// MARK: - Protocol Implementations -
+
+extension Version: Comparable {
+    public static func < (lhs: Version, rhs: Version) -> Bool {
+        let majorComparison = Version.compare(lhs: lhs.major, rhs: rhs.major)
+        let minorComparison = Version.compare(lhs: lhs.canonicalMinor, rhs: rhs.canonicalMinor)
+        let patchComparison = Version.compare(lhs: lhs.canonicalPatch, rhs: rhs.canonicalPatch)
+        
+        if majorComparison != .orderedSame {
+            return majorComparison == .orderedAscending
+        }
+        
+        if minorComparison != .orderedSame {
+            return minorComparison == .orderedAscending
+        }
+        
+        if patchComparison != .orderedSame {
+            return patchComparison == .orderedAscending
+        }
+        
+        switch (lhs.prerelease, rhs.prerelease) {
+            case (.some, .none):
+                return true
+            case (.none, .some):
+                return false
+            case (.none, .none):
+                return false
+            case (.some(let lpre), .some(let rpre)):
+                return Version.compareNumeric(lhs: lpre, rhs: rpre) == .orderedAscending
+        }
+    }
+}
+
+extension Version: CustomStringConvertible {
+    public var description: String {
+        return [
+            "\(major)",
+            minor != nil ? ".\(minor!)" : "",
+            patch != nil ? ".\(patch!)" : "",
+            prerelease != nil ? "-\(prerelease!)" : "",
+            build != nil ? "+\(build!)" : ""
+            ].joined(separator: "")
+    }
+}
 
 extension Version: Equatable {
     public static func == (lhs: Version, rhs: Version) -> Bool {
@@ -147,69 +201,6 @@ extension Version: Equatable {
     
     public static func !== (lhs: Version, rhs: Version) -> Bool {
         return !(lhs === rhs)
-    }
-}
-
-// MARK: - Comparable
-
-extension Version: Comparable {
-    public static func < (lhs: Version, rhs: Version) -> Bool {
-        let majorComparison = Version.compare(lhs: lhs.major, rhs: rhs.major)
-        if majorComparison != .orderedSame {
-            return majorComparison == .orderedAscending
-        }
-        
-        let minorComparison = Version.compare(lhs: lhs.canonicalMinor, rhs: rhs.canonicalMinor)
-        if minorComparison != .orderedSame {
-            return minorComparison == .orderedAscending
-        }
-        
-        let patchComparison = Version.compare(lhs: lhs.canonicalPatch, rhs: rhs.canonicalPatch)
-        if patchComparison != .orderedSame {
-            return patchComparison == .orderedAscending
-        }
-        
-        switch (lhs.prerelease, rhs.prerelease) {
-        case (.some, .none):
-            return true
-        case (.none, .some):
-            return false
-        case (.none, .none):
-            return false
-        case (.some(let lpre), .some(let rpre)):
-            let prereleaseComparison = Version.compareNumeric(lhs: lpre, rhs: rpre)
-            return prereleaseComparison == .orderedAscending
-        }
-    }
-}
-
-
-// MARK: - Hashable
-
-extension Version: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine([major, canonicalMinor, canonicalPatch, prerelease?.hashValue ?? 0])
-    }
-}
-
-
-// MARK: String Conversion
-
-extension Version: CustomStringConvertible {
-    public var description: String {
-        return [
-            "\(major)",
-            minor      != nil ? ".\(minor!)"      : "",
-            patch      != nil ? ".\(patch!)"      : "",
-            prerelease != nil ? "-\(prerelease!)" : "",
-            build      != nil ? "+\(build!)"      : ""
-            ].joined(separator: "")
-    }
-}
-
-extension Version {
-    public static func valid(string: String, strict: Bool = false) -> Bool {
-        return string.matches(Version.strictParser.versionRegex)
     }
 }
 
@@ -230,17 +221,26 @@ extension Version: ExpressibleByStringLiteral {
     }
 }
 
+extension Version: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(major)
+        hasher.combine(canonicalMinor)
+        hasher.combine(canonicalPatch)
+        hasher.combine(prerelease?.hashValue ?? 0)
+    }
+}
+
 // MARK: - Helpers -
 
 extension Bundle {
     /// The marketing version number of the bundle.
     public var version: Version? {
-        return self.versionFromInfoDicitionary(forKey: String(kCFBundleVersionKey))
+        return versionFromInfoDicitionary(forKey: String(kCFBundleVersionKey))
     }
     
     /// The short version number of the bundle.
     public var shortVersion: Version? {
-        return self.versionFromInfoDicitionary(forKey: "CFBundleShortVersionString")
+        return versionFromInfoDicitionary(forKey: "CFBundleShortVersionString")
     }
     
     private func versionFromInfoDicitionary(forKey key: String) -> Version? {
@@ -250,15 +250,13 @@ extension Bundle {
         guard let bundleVersion = dictionary[key] as? String else {
             return nil
         }
-
+        
         return try? Version.lenientParser.parse(string: bundleVersion)
     }
 }
 
 extension ProcessInfo {
     /// The version of the operating system on which the process is executing.
-    @available(OSX, introduced: 10.10)
-    @available(iOS, introduced: 8.0)
     public var operationSystemVersion: Version {
         return Version(
             major: operatingSystemVersion.majorVersion,

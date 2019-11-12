@@ -8,12 +8,12 @@ import Swallow
 import Swift
 
 enum VersionParserError: Error {
-    case MissingMinorComponent
-    case MissingPatchComponent
-    case InvalidComponents
-    case InvalidMajorComponent
-    case InvalidMinorComponent
-    case InvalidPatchComponent
+    case missingMinorComponent
+    case missingPatchComponent
+    case invalidComponents
+    case invalidMajorComponent
+    case invalidMinorComponent
+    case invalidPatchComponent
 }
 
 public struct VersionParser {
@@ -72,14 +72,14 @@ public struct VersionParser {
         var version = Version()
         
         if components.count != 6 { // all, major, minor, patch, prerelease, build
-            throw VersionParserError.InvalidComponents
+            throw VersionParserError.invalidComponents
         }
         
         if self.strict {
             if components[2] == nil {
-                throw VersionParserError.MissingMinorComponent
+                throw VersionParserError.missingMinorComponent
             } else if components[3] == nil {
-                throw VersionParserError.MissingPatchComponent
+                throw VersionParserError.missingPatchComponent
             }
         }
         
@@ -90,19 +90,19 @@ public struct VersionParser {
         if let major = majorComponent.flatMap({ Int($0) }) {
             version.major = major
         } else {
-            throw VersionParserError.InvalidMajorComponent
+            throw VersionParserError.invalidMajorComponent
         }
         
         if let minor = minorComponent.flatMap({ Int($0) }) {
             version.minor = minor
         } else if minorComponent != nil {
-            throw VersionParserError.InvalidMinorComponent
+            throw VersionParserError.invalidMinorComponent
         }
         
         if let patch = patchComponent.flatMap({ Int($0) }) {
             version.patch = patch
         } else if patchComponent != nil {
-            throw VersionParserError.InvalidPatchComponent
+            throw VersionParserError.invalidPatchComponent
         }
         
         version.prerelease = components[4]

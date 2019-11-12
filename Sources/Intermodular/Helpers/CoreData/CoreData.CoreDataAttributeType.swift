@@ -46,7 +46,7 @@ extension CoreDataAttributeType {
     }
 }
 
-// MARK: - Implementations -
+// MARK: - Concrete Implementations -
 
 extension Bool: CoreDataAttributeType {
     

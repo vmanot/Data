@@ -184,7 +184,7 @@ private struct _KeyedEncodingContainer<Key: CodingKey> : KeyedEncodingContainerP
 
     var codingPath: [CodingKey] { return encoder.codingPath }
     func encodeNil(forKey key: Key)             throws { try encoder(for: key).encodeNil() }
-    func encode<T>(_ value: T, forKey key: Key) throws where T: CodableUnit { try encoder(for: key).encode(value) }
+    func encode<T>(_ value: T, forKey key: Key) throws where T: CoderPrimitive { try encoder(for: key).encode(value) }
     func encode<T>(_ value: T, forKey key: Key) throws where T: Encodable { try encoder(for: key).encode(value) }
 
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type,
@@ -217,7 +217,7 @@ private struct _UnkeyedEncodingContainer: UnkeyedEncodingContainer {
     var codingPath: [CodingKey] { return encoder.codingPath }
     var count: Int { return encoder.array.count }
     func encodeNil()           throws { try currentEncoder.encodeNil() }
-    func encode<T>(_ value: T) throws where T: CodableUnit { try currentEncoder.encode(value) }
+    func encode<T>(_ value: T) throws where T: CoderPrimitive { try currentEncoder.encode(value) }
     func encode<T>(_ value: T) throws where T: Encodable { try currentEncoder.encode(value) }
 
     func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
@@ -238,7 +238,7 @@ extension ObjectEncoder.Encoder: SingleValueEncodingContainer {
         object = NSNull()
     }
 
-    public final func encode<T: CodableUnit>(_ value: T) throws {
+    public final func encode<T: CoderPrimitive>(_ value: T) throws {
         try box(value)
     }
 
