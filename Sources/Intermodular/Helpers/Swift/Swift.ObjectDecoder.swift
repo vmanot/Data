@@ -1,18 +1,16 @@
 //
-//  Decoder.swift
-//  ObjectEncoder
-//
-//  Created by Norio Nomura on 10/21/17.
-//  Copyright (c) 2017 ObjectEncoder. All rights reserved.
+// Copyright (c) Vatsal Manot
 //
 
-#if !_runtime(_ObjC)
-import CoreFoundation
-#endif
 import Foundation
+import Swallow
+import Swift
 
-public struct ObjectDecoder {
-    public init() {}
+public struct ObjectDecoder: Initiable {
+    public init() {
+        
+    }
+    
     public func decode(opaque type: Decodable.Type,
                           from object: Any,
                           userInfo: [CodingUserInfoKey: Any] = [:]) throws -> Decodable {
@@ -57,8 +55,6 @@ public struct ObjectDecoder {
         set { options.decodingStrategies = newValue }
     }
 
-    // MARK: -
-
     fileprivate struct Options {
         fileprivate var decodingStrategies = DecodingStrategies()
     }
@@ -84,16 +80,12 @@ extension ObjectDecoder {
             self.codingPath = codingPath
         }
 
-        // MARK: - Swift.Decoder properties
-
         public let codingPath: [CodingKey]
         public let userInfo: [CodingUserInfoKey: Any]
     }
 }
 
 extension ObjectDecoder.Decoder {
-    // MARK: - Swift.Decoder Methods
-
     public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
         return .init(_KeyedDecodingContainer<Key>(decoder: self, wrapping: try cast()))
     }
@@ -103,8 +95,6 @@ extension ObjectDecoder.Decoder {
     }
 
     public func singleValueContainer() throws -> SingleValueDecodingContainer { return self }
-
-    // MARK: -
 
     private func applyStrategy<T: Decodable>(_ type: T.Type) throws -> T? {
         if let strategy = options.decodingStrategies[type] ?? options.decodingStrategies[T.self] {
@@ -167,8 +157,6 @@ private struct _KeyedDecodingContainer<Key: CodingKey> : KeyedDecodingContainerP
         self.dictionary = dictionary
     }
 
-    // MARK: - Swift.KeyedDecodingContainerProtocol Methods
-
     var codingPath: [CodingKey] { return decoder.codingPath }
     var allKeys: [Key] {
         #if swift(>=4.1)
@@ -204,8 +192,6 @@ private struct _KeyedDecodingContainer<Key: CodingKey> : KeyedDecodingContainerP
     func superDecoder() throws -> Decoder { return try decoder(for: _ObjectCodingKey.super) }
     func superDecoder(forKey key: Key) throws -> Decoder { return try decoder(for: key) }
 
-    // MARK: -
-
     private func object(for key: CodingKey) throws -> Any {
         guard let object = dictionary[key.stringValue] else {
             throw _keyNotFound(at: codingPath, key, "No value associated with key \(key) (\"\(key.stringValue)\").")
@@ -228,8 +214,6 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         self.array = array
         self.currentIndex = 0
     }
-
-    // MARK: - Swift.UnkeyedDecodingContainer Methods
 
     var codingPath: [CodingKey] { return decoder.codingPath }
     var count: Int? { return array.count }
@@ -267,8 +251,6 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         return try currentDecoder { $0 }
     }
 
-    // MARK: -
-
     private var currentKey: CodingKey { return _ObjectCodingKey(index: currentIndex) }
     private var currentObject: Any { return array[currentIndex] }
 
@@ -285,9 +267,6 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
 }
 
 extension ObjectDecoder.Decoder: SingleValueDecodingContainer {
-
-    // MARK: - Swift.SingleValueDecodingContainer Methods
-
     public func decodeNil() -> Bool { return object is NSNull }
     public func decode(_ type: Bool.Type)   throws -> Bool { return try applyStrategy(type) ?? cast() }
     public func decode(_ type: String.Type) throws -> String { return try applyStrategy(type) ?? cast() }
@@ -299,9 +278,6 @@ extension ObjectDecoder.Decoder: SingleValueDecodingContainer {
     }
 }
 
-// MARK: - DecodingError helpers
-
-// swiftlint:disable:next identifier_name
 func _dataCorrupted(at codingPath: [CodingKey], _ description: String, _ error: Error? = nil) -> DecodingError {
     let context = DecodingError.Context(codingPath: codingPath, debugDescription: description, underlyingError: error)
     return .dataCorrupted(context)
@@ -322,8 +298,6 @@ private func _typeMismatch(at codingPath: [CodingKey], expectation: Any.Type, re
     let context = DecodingError.Context(codingPath: codingPath, debugDescription: description)
     return .typeMismatch(expectation, context)
 }
-
-// MARK: - ObjectDecoder.DecodingStrategy
 
 extension ObjectDecoder {
     /// The strategy to use for decoding `Data` values.
@@ -454,5 +428,3 @@ extension ObjectDecoder.DecodingStrategy where T == URL {
         return url
     }
 }
-
-// swiftlint:disable:this file_length
