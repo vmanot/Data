@@ -55,17 +55,3 @@ extension Data {
         return try JSONDecoder().decode(JSON.self, from: self, allowFragments: true)
     }
 }
-
-extension UserDefaults {
-    public func json(forKey key: String) -> JSON? {
-        return data(forKey: key).flatMap({ try? .init(jsonObjectData: $0) })
-    }
-
-    public func setJSON(_ json: JSON, forKey key: String) throws {
-        set(try json.toJSONData(), forKey: key)
-    }
-
-    public func setJSON(_ json: Encodable, forKey key: String) throws {
-        set(try json.toJSONData(), forKey: key)
-    }
-}

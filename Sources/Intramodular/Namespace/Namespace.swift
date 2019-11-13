@@ -21,7 +21,7 @@ public struct Namespace: Codable, Hashable {
     }
     
     public func join(_ other: Namespace) -> Namespace {
-        return appending(contentsOf: other)
+        appending(contentsOf: other)
     }
 }
 
@@ -65,21 +65,21 @@ extension Namespace {
 
 extension Namespace: Collection {
     public var startIndex: Int {
-        return segments.startIndex
+        segments.startIndex
     }
     
     public var endIndex: Int {
-        return segments.endIndex
+        segments.endIndex
     }
     
     public subscript(_ index: Int) -> NamespaceSegment {
-        return segments[index]
+        segments[index]
     }
 }
 
 extension Namespace: CustomStringConvertible {
     public var description: String {
-        return segments.map({ $0.description }).joined(separator: ".")
+        segments.map({ $0.description }).joined(separator: ".")
     }
 }
 
@@ -95,18 +95,18 @@ extension Namespace: ExtensibleSequence {
     }
     
     public func makeIterator() -> Array<NamespaceSegment>.Iterator {
-        return segments.makeIterator()
+        segments.makeIterator()
     }
 }
 
 extension Namespace: SequenceInitiableSequence {
     public init<S: Sequence>(_ source: S) where S.Element == Element {
-        self.segments = .init(source)
+        segments = .init(source)
     }
 }
 
 extension Namespace: LosslessStringConvertible {
     public init(_ description: String) {
-        self.segments = NamespaceSegment(description).toArray()
+        segments = NamespaceSegment(description).toArray()
     }
 }
