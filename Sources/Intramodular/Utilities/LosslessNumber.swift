@@ -48,6 +48,10 @@ public struct OptionalLosslessNumber<N: Number>: Decodable, Equatable, Hashable 
         self.wrappedValue = wrappedValue
     }
     
+    public init() {
+        self.init(wrappedValue: nil)
+    }
+    
     public init(from decoder: Decoder) throws {
         guard (try? !decoder.decodeSingleValueNil()) ?? true else {
             wrappedValue = nil

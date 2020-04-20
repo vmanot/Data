@@ -37,15 +37,19 @@ public final class CSVDecoder: TopLevelDecoder {
             return SingleValueContainer(headers: self.headers, rows: self.rows, codingPath: self.codingPath)
         }
     }
-
+    
+    public init() {
+        
+    }
+    
     public func decode<T: Decodable>(_ type: T.Type, from string: String) throws -> T {
         var rows = string.split(separator: "\n")
-
+        
         let headers = rows
             .removeFirst()
             .split(separator: ",")
             .enumerated()
-            .map({ CSVHeader(index: $0, key: String($1)) })
+            .map({ CSVHeader(index: $0, name: String($1)) })
         
         return try T(from: _Decoder(headers: .init(headers), rows: rows.map(String.init)))
     }

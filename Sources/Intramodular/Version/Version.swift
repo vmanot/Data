@@ -9,7 +9,7 @@ import Swift
 public struct Version {
     fileprivate static let strictParser = VersionParser(strict: true)
     fileprivate static let lenientParser = VersionParser(strict: false)
-
+    
     /// The major component of the version.
     ///
     /// - Note:
@@ -65,7 +65,7 @@ public struct Version {
     
     /// An optional build component of the version.
     public var build: String?
-        
+    
     /// Initialize a version from its components.
     public init(
         major: Int = 0,
@@ -176,13 +176,15 @@ extension Version: Comparable {
 
 extension Version: CustomStringConvertible {
     public var description: String {
-        return [
+        let components = [
             "\(major)",
             minor != nil ? ".\(minor!)" : "",
             patch != nil ? ".\(patch!)" : "",
             prerelease != nil ? "-\(prerelease!)" : "",
             build != nil ? "+\(build!)" : ""
-            ].joined(separator: "")
+        ]
+        
+        return components.joined(separator: "")
     }
 }
 
@@ -192,6 +194,7 @@ extension Version: Equatable {
         let equalMinor = lhs.canonicalMinor == rhs.canonicalMinor
         let equalPatch = lhs.canonicalPatch == rhs.canonicalPatch
         let equalPrerelease = lhs.prerelease == rhs.prerelease
+        
         return equalMajor && equalMinor && equalPatch && equalPrerelease
     }
     
@@ -230,12 +233,16 @@ extension Version: Hashable {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Use -
 
 extension Bundle {
     /// The marketing version number of the bundle.
     public var version: Version? {
+        #if os(Linux)
+        return nil
+        #else
         return versionFromInfoDicitionary(forKey: String(kCFBundleVersionKey))
+        #endif
     }
     
     /// The short version number of the bundle.
@@ -244,10 +251,11 @@ extension Bundle {
     }
     
     private func versionFromInfoDicitionary(forKey key: String) -> Version? {
-        guard let dictionary = self.infoDictionary else {
+        guard let infoDictionary = infoDictionary else {
             return nil
         }
-        guard let bundleVersion = dictionary[key] as? String else {
+        
+        guard let bundleVersion = infoDictionary[key] as? String else {
             return nil
         }
         
@@ -257,6 +265,8 @@ extension Bundle {
 
 extension ProcessInfo {
     /// The version of the operating system on which the process is executing.
+    @available(OSX, introduced: 10.10)
+    @available(iOS, introduced: 8.0)
     public var operationSystemVersion: Version {
         return Version(
             major: operatingSystemVersion.majorVersion,

@@ -26,13 +26,13 @@ extension CSVDecoder._Decoder {
 extension CSVDecoder._Decoder.KeyedContainer: KeyedDecodingContainerProtocol {
     var allKeys: [Key] {
         return self.headers.compactMap({ (header) -> Key? in
-            return Key(stringValue: header.key)
+            return Key(stringValue: header.name ?? String(header.index))
         })
     }
     
     func contains(_ key: Key) -> Bool {
         let header = self.headers.first { (header) -> Bool in
-            return header.key == key.stringValue
+            return header.name == key.stringValue
         }
         
         guard let unwrappedHeader = header,
@@ -49,7 +49,7 @@ extension CSVDecoder._Decoder.KeyedContainer: KeyedDecodingContainerProtocol {
     }
     
     func decode(_ type: String.Type, forKey key: Key) throws -> String  {
-        let header = headers.first { $0.key == key.stringValue }
+        let header = headers.first { $0.name == key.stringValue }
         
         guard let unwrappedHeader = header else  {
             let context = DecodingError.Context(codingPath: self.codingPath, debugDescription: "Values: \(self.values) Headers: \(self.headers)")

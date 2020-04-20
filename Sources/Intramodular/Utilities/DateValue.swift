@@ -40,8 +40,13 @@ public struct OptionalDateValue<Formatter: DateValueCodableStrategy>: Codable {
     
     public var wrappedValue: Date?
     
-    public init(wrappedValue: Date? = nil) {
+    public init(wrappedValue: Date?) {
         self.wrappedValue = wrappedValue
+        self.value = wrappedValue.map(Formatter.encode)
+    }
+    
+    public init() {
+        self.wrappedValue = nil
         self.value = wrappedValue.map(Formatter.encode)
     }
     

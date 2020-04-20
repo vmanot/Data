@@ -553,7 +553,7 @@ extension JSON {
             dictionaryValue?[key] = newValue
         }
     }
-        
+    
     public subscript(unsafelyUnwrapped key: String) -> JSON? {
         get {
             return dictionaryValue.unsafelyUnwrapped[key]

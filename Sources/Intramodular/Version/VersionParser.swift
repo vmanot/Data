@@ -7,7 +7,7 @@ import FoundationX
 import Swallow
 import Swift
 
-enum VersionParserError: Error {
+private enum VersionParserError: Error {
     case missingMinorComponent
     case missingPatchComponent
     case invalidComponents
@@ -71,7 +71,7 @@ public struct VersionParser {
     public func parse(components: [String?]) throws -> Version {
         var version = Version()
         
-        if components.count != 6 { // all, major, minor, patch, prerelease, build
+        if components.count != 6 {
             throw VersionParserError.invalidComponents
         }
         

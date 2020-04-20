@@ -4,9 +4,7 @@
 
 import CoreData
 import Foundation
-import FoundationX
 import Swallow
-import Swift
 
 @propertyWrapper
 public struct CoreDataField<Value: CoreDataFieldCoder> {
@@ -14,15 +12,11 @@ public struct CoreDataField<Value: CoreDataFieldCoder> {
     
     public var wrappedValue: Value
     
-    public var projectedValue: Self {
-        self
-    }
-    
-    public init(key: String, wrappedValue: Value) {
+    public init(key: String, defaultValue: Value) {
         self.key = .init(stringValue: key)
-        self.wrappedValue = wrappedValue
+        self.wrappedValue = defaultValue
     }
-    
+        
     public static subscript<EnclosingSelf: NSManagedObject>(
         _enclosingInstance object: EnclosingSelf,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value>,

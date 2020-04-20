@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 protocol JSONConvertible {
     func jsonValue() throws -> JSON

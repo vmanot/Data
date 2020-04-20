@@ -38,9 +38,5 @@ extension JSON {
                 throw JSONRuntimeError.isNotEmpty
             }
         }
-        
-        public func proof<T>() -> T? {
-            return nil
-        }
     }
 }
