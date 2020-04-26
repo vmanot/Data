@@ -233,7 +233,7 @@ extension Version: Hashable {
     }
 }
 
-// MARK: - Use -
+// MARK: - Usage -
 
 extension Bundle {
     /// The marketing version number of the bundle.
