@@ -7,9 +7,7 @@ import Swallow
 
 extension NSEntityDescription {
     public var allKeys: [AnyCodingKey] {
-        return properties
-            .map({ .init(stringValue: $0.name) })
-            + (self.superentity?.allKeys ?? [])
+        properties.map({ .init(stringValue: $0.name) }) + (superentity?.allKeys ?? [])
     }
     
     public func contains<Key: CodingKey>(key: Key) -> Bool {

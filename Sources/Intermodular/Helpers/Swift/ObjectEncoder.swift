@@ -15,7 +15,9 @@ public struct ObjectEncoder: Initiable {
         do {
             let encoder = ObjectEncoder.Encoder(options, userInfo)
             var container = encoder.singleValueContainer()
+            
             try container.encode(value)
+            
             return encoder.object
         } catch let error as EncodingError {
             throw error
