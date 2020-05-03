@@ -9,11 +9,22 @@ import Swift
 /// A modern `NSManagedObject` subclass.
 ///
 open class CoreDataObject: NSManagedObject {
+    open func setupInitialAttributes() {
+        
+    }
+    
     /// Derive and set any calculated attributes.
     ///
     /// This is typically done for optimization purposes.
     open func deriveAttributes() {
         
+    }
+    
+    override open func awakeFromInsert() {
+        super.awakeFromInsert()
+        
+        setupInitialAttributes()
+        deriveAttributes()
     }
     
     override open func awakeFromFetch() {
@@ -30,6 +41,12 @@ open class CoreDataObject: NSManagedObject {
     
     override open func willAccessValue(forKey key: String?) {
         super.willAccessValue(forKey: key)
+    }
+    
+    override public func willChangeValue(forKey key: String) {
+        super.willChangeValue(forKey: key)
+        
+        objectWillChange.send()
     }
     
     /// Provide a fallback value for `primitiveValue(forKey:)`.

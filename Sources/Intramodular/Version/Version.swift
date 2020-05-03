@@ -87,7 +87,8 @@ public struct Version {
             let parser = VersionParser(strict: false)
             self = try parser.parse(string: value)
         } catch let error {
-            print("Error: Failed to parse version number '\(value)': \(error)")
+            debugPrint("Error: Failed to parse version number '\(value)': \(error)")
+            
             return nil
         }
     }
