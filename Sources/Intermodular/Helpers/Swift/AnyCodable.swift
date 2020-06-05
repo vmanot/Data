@@ -17,17 +17,17 @@ public enum AnyCodable: opaque_Hashable, Hashable {
     case dictionary([AnyCodingKey: AnyCodable])
     case objectiveC(HashableNSCodingToEncodable)
     case encodable(AnyHashableEncodable)
-
+    
     public init(_ value: Any) throws {
         switch value {
-        case let value as AnyCodableConvertible:
-            self = try value.toAnyCodable()
-        case let value as (opaque_Hashable & NSCoding):
-            self = .objectiveC(.init(base: value))
-        case let value as (opaque_Hashable & Encodable):
-            self = .encodable(.init(value))
-        default:
-            self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
+            case let value as AnyCodableConvertible:
+                self = try value.toAnyCodable()
+            case let value as (opaque_Hashable & NSCoding):
+                self = .objectiveC(.init(base: value))
+            case let value as (opaque_Hashable & Encodable):
+                self = .encodable(.init(value))
+            default:
+                self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
         }
     }
 }
@@ -65,51 +65,51 @@ extension AnyCodable: Codable {
             }
         } else if var container = try? decoder.unkeyedContainer() {
             var value: [AnyCodable] = []
-
+            
             container.count.map({ value.reserveCapacity($0) })
-
+            
             while !container.isAtEnd {
                 value.append(try container.decode(AnyCodable.self))
             }
-
+            
             self = .array(value)
         } else if let container = try? decoder.container(keyedBy: AnyCodingKey.self) {
             var value: [AnyCodingKey: AnyCodable] = [:]
-
+            
             value.reserveCapacity(container.allKeys.count)
-
+            
             for key in container.allKeys {
                 value[key] = try container.decode(AnyCodable.self, forKey: key)
             }
-
+            
             self = .dictionary(value)
         } else {
             self = .none
         }
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         switch self {
-        case .none:
-            try encoder.encodeNil()
-        case .bool(let value):
-            try value.encode(to: encoder)
-        case .number(let value):
-            try value.encode(to: encoder)
-        case .string(let value):
-            try value.encode(to: encoder)
-        case .date(let value):
-            try value.encode(to: encoder)
-        case .url(let value):
-            try value.encode(to: encoder)
-        case .array(let value):
-            try value.encode(to: encoder)
-        case .dictionary(let value):
-            try value.encode(to: encoder)
-        case .objectiveC(let value):
-            try value.encode(to: encoder)
-        case .encodable(let value):
-            try value.encode(to: encoder)
+            case .none:
+                try encoder.encodeNil()
+            case .bool(let value):
+                try value.encode(to: encoder)
+            case .number(let value):
+                try value.encode(to: encoder)
+            case .string(let value):
+                try value.encode(to: encoder)
+            case .date(let value):
+                try value.encode(to: encoder)
+            case .url(let value):
+                try value.encode(to: encoder)
+            case .array(let value):
+                try value.encode(to: encoder)
+            case .dictionary(let value):
+                try value.encode(to: encoder)
+            case .objectiveC(let value):
+                try value.encode(to: encoder)
+            case .encodable(let value):
+                try value.encode(to: encoder)
         }
     }
 }
@@ -154,7 +154,7 @@ extension AnyCodable: ExpressibleByStringLiteral {
     public init(extendedGraphemeClusterLiteral value: String) {
         self = .string(value)
     }
-
+    
     public init(stringLiteral value: String) {
         self = .string(value)
     }
@@ -163,53 +163,53 @@ extension AnyCodable: ExpressibleByStringLiteral {
 extension AnyCodable: ObjectiveCBridgeable {
     public typealias _ObjectiveCType = NSCoding
     public typealias ObjectiveCType = NSCoding
-
+    
     public static func bridgeFromObjectiveC(_ source: ObjectiveCType) throws -> AnyCodable {
         switch source {
-        case let value as NSNumber:
-            return .number(.init(value))
-        case let value as NSString:
-            return .string(.init(value))
-        case let value as NSDate:
-            return .date(value as Date)
-        case let value as NSURL:
-            return .url(value as URL)
-        case let value as NSArray:
-            return .array(try cast(value as [AnyObject], to: [NSCoding].self).map({ try AnyCodable.bridgeFromObjectiveC($0) }))
-        case let value as NSDictionary:
-            return .dictionary(try cast(value as [NSObject : AnyObject], to: [String: NSCoding].self).mapKeysAndValues({ .init(stringValue: try cast($0, to: NSString.self) as String) }, { try AnyCodable.bridgeFromObjectiveC($0) }))
-        default:
-            throw RuntimeCastError.invalidTypeCast(
-                from: type(of: source),
-                to: AnyCodable.self,
-                value: source,
-                location: .unavailable
+            case let value as NSNumber:
+                return .number(.init(value))
+            case let value as NSString:
+                return .string(.init(value))
+            case let value as NSDate:
+                return .date(value as Date)
+            case let value as NSURL:
+                return .url(value as URL)
+            case let value as NSArray:
+                return .array(try cast(value as [AnyObject], to: [NSCoding].self).map({ try AnyCodable.bridgeFromObjectiveC($0) }))
+            case let value as NSDictionary:
+                return .dictionary(try cast(value as [NSObject : AnyObject], to: [String: NSCoding].self).mapKeysAndValues({ .init(stringValue: try cast($0, to: NSString.self) as String) }, { try AnyCodable.bridgeFromObjectiveC($0) }))
+            default:
+                throw RuntimeCastError.invalidTypeCast(
+                    from: type(of: source),
+                    to: AnyCodable.self,
+                    value: source,
+                    location: .unavailable
             )
         }
     }
-
+    
     public func bridgeToObjectiveC() throws -> ObjectiveCType {
         switch self {
-        case .none:
-            return NSNull()
-        case .bool(let value):
-            return value as NSNumber
-        case .number(let value):
-            return value.toNSNumber()
-        case .string(let value):
-            return value as NSString
-        case .date(let value):
-            return value as NSDate
-        case .url(let value):
-            return value as NSURL
-        case .array(let value):
-            return try value.map({ try $0.bridgeToObjectiveC() }) as NSArray
-        case .dictionary(let value):
-            return try value.mapKeysAndValues({ $0.stringValue }, { try $0.bridgeToObjectiveC() }) as NSDictionary
-        case .objectiveC(let value):
-            return value.base
-        case .encodable(let value):
-            return try ObjectEncoder().encode(value)
+            case .none:
+                return NSNull()
+            case .bool(let value):
+                return value as NSNumber
+            case .number(let value):
+                return value.toNSNumber()
+            case .string(let value):
+                return value as NSString
+            case .date(let value):
+                return value as NSDate
+            case .url(let value):
+                return value as NSURL
+            case .array(let value):
+                return try value.map({ try $0.bridgeToObjectiveC() }) as NSArray
+            case .dictionary(let value):
+                return try value.mapKeysAndValues({ $0.stringValue }, { try $0.bridgeToObjectiveC() }) as NSDictionary
+            case .objectiveC(let value):
+                return value.base
+            case .encodable(let value):
+                return try ObjectEncoder().encode(value)
         }
     }
 }
@@ -218,11 +218,11 @@ extension AnyCodable: ObjectiveCBridgeable {
 
 public struct AnyEncodable: Encodable {
     public let value: Encodable
-
+    
     public init(_ value: Encodable) {
         self.value = value
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         try value.encode(to: encoder)
     }
@@ -230,15 +230,15 @@ public struct AnyEncodable: Encodable {
 
 public struct AnyHashableEncodable: Encodable, Hashable {
     public let value: opaque_Hashable & Encodable
-
+    
     public init(_ value: opaque_Hashable & Encodable) {
         self.value = value
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         try value.encode(to: encoder)
     }
-
+    
     public func hash(into hasher: inout Hasher) {
         value.hash(into: &hasher)
     }

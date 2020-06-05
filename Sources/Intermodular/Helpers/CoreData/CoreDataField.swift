@@ -16,7 +16,12 @@ public struct CoreDataField<Value: CoreDataFieldCoder> {
         self.key = .init(stringValue: key)
         self.wrappedValue = defaultValue
     }
-        
+    
+    public init<T>(key: String) where Value == Optional<T> {
+        self.key = .init(stringValue: key)
+        self.wrappedValue = nil
+    }
+    
     public static subscript<EnclosingSelf: NSManagedObject>(
         _enclosingInstance object: EnclosingSelf,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value>,

@@ -147,7 +147,7 @@ extension NSNumber: JSONConvertible {
         } else if let value = self as? UInt64 {
             return value
         } else {
-            throw JSONRuntimeError.irrepresentableNumber(self)
+            throw JSON.RuntimeError.irrepresentableNumber(self)
         }
     }
 

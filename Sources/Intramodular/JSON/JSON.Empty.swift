@@ -16,26 +16,26 @@ extension JSON {
                         if json.isEmpty {
                             return
                         } else {
-                            throw JSONRuntimeError.isNotEmpty
+                            throw JSON.RuntimeError.isNotEmpty
                         }
                     } catch {
-                        throw JSONRuntimeError.isNotEmpty
+                        throw JSON.RuntimeError.isNotEmpty
                     }
                 }
             } else if let unkeyedContainer = try? decoder.unkeyedContainer() {
                 if unkeyedContainer.isAtEnd {
                     return
                 } else {
-                    throw JSONRuntimeError.isNotEmpty
+                    throw JSON.RuntimeError.isNotEmpty
                 }
             } else if let keyedContainer = try? decoder.container(keyedBy: JSONCodingKey.self) {
                 if keyedContainer.allKeys.isEmpty {
                     return
                 } else {
-                    throw JSONRuntimeError.isNotEmpty
+                    throw JSON.RuntimeError.isNotEmpty
                 }
             } else {
-                throw JSONRuntimeError.isNotEmpty
+                throw JSON.RuntimeError.isNotEmpty
             }
         }
     }

@@ -3,13 +3,13 @@
 //
 
 import CoreData
-import Swift
+import Swallow
 
 /// A CoreData field coder.
 public protocol CoreDataFieldCoder {
     static func decodePrimitive<Key: CodingKey>(from _: NSManagedObject, forKey _: Key) throws -> Self
     static func decode<Key: CodingKey>(from _: NSManagedObject, forKey _: Key) throws -> Self
-
+    
     func encodePrimitive<Key: CodingKey>(to _: NSManagedObject, forKey _: Key) throws
     func encode<Key: CodingKey>(to _: NSManagedObject, forKey _: Key) throws
 }
@@ -20,7 +20,7 @@ extension RawRepresentable where RawValue: CoreDataFieldCoder, Self: CoreDataFie
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         try Self(rawValue: try RawValue.decodePrimitive(from: object, forKey: key)).unwrap()
     }
-
+    
     public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         try Self(rawValue: try RawValue.decode(from: object, forKey: key)).unwrap()
     }
@@ -31,5 +31,23 @@ extension RawRepresentable where RawValue: CoreDataFieldCoder, Self: CoreDataFie
     
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
         try rawValue.encode(to: object, forKey: key)
+    }
+}
+
+extension Wrapper where Value: CoreDataFieldCoder, Self: CoreDataFieldCoder {
+    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+        Self(try Value.decodePrimitive(from: object, forKey: key))
+    }
+    
+    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+        Self(try Value.decode(from: object, forKey: key))
+    }
+    
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        try value.encodePrimitive(to: object, forKey: key)
+    }
+    
+    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        try value.encode(to: object, forKey: key)
     }
 }

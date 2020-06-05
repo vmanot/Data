@@ -7,25 +7,59 @@ import Foundation
 import Merge
 import Swift
 
-public struct CoreDataContainer {
+public final class CoreDataContainer: ObservableObject {
     private let cancellables = Cancellables()
     
     public let base: NSPersistentContainer
+    
     private let cloudKitContainerIdentifier: String?
     
-    public static func cloudKitContainer(name: String, cloudKitContainerIdentifier: String) -> Self {
-        return .init(
-            base: .init(name: name),
-            cloudKitContainerIdentifier: cloudKitContainerIdentifier
-        )
+    private init(
+        base: NSPersistentContainer,
+        cloudKitContainerIdentifier: String?
+    ) {
+        self.base = base
+        self.cloudKitContainerIdentifier = cloudKitContainerIdentifier
     }
     
+    public init(name: String) {
+        self.base = NSPersistentContainer(name: name)
+        self.cloudKitContainerIdentifier = nil
+    }
+    
+    public static func cloudKitContainer(
+        name: String,
+        managedObjectModel: NSManagedObjectModel? = nil,
+        cloudKitContainerIdentifier: String
+    ) -> CoreDataContainer {
+        if let managedObjectModel = managedObjectModel {
+            return .init(
+                base: NSPersistentCloudKitContainer(
+                    name: name,
+                    managedObjectModel: managedObjectModel
+                ),
+                cloudKitContainerIdentifier: cloudKitContainerIdentifier
+            )
+        } else {
+            return .init(
+                base: NSPersistentCloudKitContainer(name: name),
+                cloudKitContainerIdentifier: cloudKitContainerIdentifier
+            )
+        }
+    }
+}
+
+extension CoreDataContainer {
     public func loadViewContext() {
         guard let description = base.persistentStoreDescriptions.first else {
             fatalError("Could not retrieve a persistent store description.")
         }
         
-        description.cloudKitContainerOptions = cloudKitContainerIdentifier.map({ .init(containerIdentifier: $0) })
+        if let cloudKitContainerIdentifier = cloudKitContainerIdentifier {
+            description.cloudKitContainerOptions = .init(containerIdentifier: cloudKitContainerIdentifier)
+            
+            description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        }
         
         base.loadPersistentStores()
             .map({

@@ -12,8 +12,8 @@ public struct ObjectDecoder: Initiable {
     }
     
     public func decode(opaque type: Decodable.Type,
-                          from object: Any,
-                          userInfo: [CodingUserInfoKey: Any] = [:]) throws -> Decodable {
+                       from object: Any,
+                       userInfo: [CodingUserInfoKey: Any] = [:]) throws -> Decodable {
         do {
             return try ObjectDecoder.Decoder(object, options, userInfo).singleValueContainer().decode(opaque: type)
         } catch let error as DecodingError {
@@ -22,7 +22,7 @@ public struct ObjectDecoder: Initiable {
             throw _dataCorrupted(at: [], "The given data was not valid Object.", error)
         }
     }
-
+    
     public func decode<T>(_ type: T.Type = T.self,
                           from object: Any,
                           userInfo: [CodingUserInfoKey: Any] = [:]) throws -> T where T: Decodable {
@@ -34,13 +34,13 @@ public struct ObjectDecoder: Initiable {
             throw _dataCorrupted(at: [], "The given data was not valid Object.", error)
         }
     }
-
+    
     public struct DecodingStrategy<T: Decodable> {
         public typealias Closure = (Decoder) throws -> T
         public init(closure: @escaping Closure) { self.closure = closure }
         fileprivate let closure: Closure
     }
-
+    
     public struct DecodingStrategies {
         var strategies = [ObjectIdentifier: Any]()
         public subscript<T>(type: T.Type) -> DecodingStrategy<T>? {
@@ -48,28 +48,28 @@ public struct ObjectDecoder: Initiable {
             set { strategies[ObjectIdentifier(type)] = newValue }
         }
     }
-
+    
     /// The strategis to use for decoding values.
     public var decodingStrategies: DecodingStrategies {
         get { return options.decodingStrategies }
         set { options.decodingStrategies = newValue }
     }
-
+    
     fileprivate struct Options {
         fileprivate var decodingStrategies = DecodingStrategies()
     }
-
+    
     fileprivate var options = Options()
 }
 
 extension ObjectDecoder {
     public struct Decoder: Swift.Decoder {
-
+        
         public let object: Any
-
+        
         fileprivate typealias Options = ObjectDecoder.Options
         private let options: Options
-
+        
         fileprivate init(_ object: Any,
                          _ options: Options,
                          _ userInfo: [CodingUserInfoKey: Any],
@@ -79,7 +79,7 @@ extension ObjectDecoder {
             self.userInfo = userInfo
             self.codingPath = codingPath
         }
-
+        
         public let codingPath: [CodingKey]
         public let userInfo: [CodingUserInfoKey: Any]
     }
@@ -89,29 +89,29 @@ extension ObjectDecoder.Decoder {
     public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
         return .init(_KeyedDecodingContainer<Key>(decoder: self, wrapping: try cast()))
     }
-
+    
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         return _UnkeyedDecodingContainer(decoder: self, wrapping: try cast())
     }
-
+    
     public func singleValueContainer() throws -> SingleValueDecodingContainer { return self }
-
+    
     private func applyStrategy<T: Decodable>(_ type: T.Type) throws -> T? {
         if let strategy = options.decodingStrategies[type] ?? options.decodingStrategies[T.self] {
             return try strategy.closure(self)
         }
         return nil
     }
-
+    
     private func cast<T>() throws -> T {
         guard let value = object as? T else {
             throw _typeMismatch(at: codingPath, expectation: T.self, reality: object)
         }
         return value
     }
-
+    
     // - SeeAlso: https://github.com/apple/swift/pull/11885
-
+    
     private func cast<T: ShouldNotBeDecodedFromBool>() throws -> T {
         if let number = object as? NSNumber {
             guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
@@ -126,7 +126,7 @@ extension ObjectDecoder.Decoder {
         }
         throw _typeMismatch(at: codingPath, expectation: T.self, reality: object)
     }
-
+    
     private func cast() throws -> Bool {
         if let number = object as? NSNumber {
             if number === kCFBooleanTrue {
@@ -140,7 +140,7 @@ extension ObjectDecoder.Decoder {
         }
         throw _typeMismatch(at: codingPath, expectation: Bool.self, reality: object)
     }
-
+    
     /// create a new `_Decoder` instance referencing `object` as `key` inheriting `userInfo`
     fileprivate func decoder(referencing object: Any, `as` key: CodingKey) -> ObjectDecoder.Decoder {
         return .init(object, options, userInfo, codingPath + [key])
@@ -148,15 +148,15 @@ extension ObjectDecoder.Decoder {
 }
 
 private struct _KeyedDecodingContainer<Key: CodingKey> : KeyedDecodingContainerProtocol {
-
+    
     private let decoder: ObjectDecoder.Decoder
     private let dictionary: [String: Any]
-
+    
     init(decoder: ObjectDecoder.Decoder, wrapping dictionary: [String: Any]) {
         self.decoder = decoder
         self.dictionary = dictionary
     }
-
+    
     var codingPath: [CodingKey] { return decoder.codingPath }
     var allKeys: [Key] {
         #if swift(>=4.1)
@@ -166,11 +166,11 @@ private struct _KeyedDecodingContainer<Key: CodingKey> : KeyedDecodingContainerP
         #endif
     }
     func contains(_ key: Key) -> Bool { return dictionary[key.stringValue] != nil }
-
+    
     func decodeNil(forKey key: Key) throws -> Bool {
         return try object(for: key) is NSNull
     }
-
+    
     func decode(_ type: Bool.Type, forKey key: Key)   throws -> Bool { return try decoder(for: key).decode(type) }
     func decode(_ type: String.Type, forKey key: Key) throws -> String { return try decoder(for: key).decode(type) }
     func decode<T>(_ type: T.Type, forKey key: Key)   throws -> T where T: ShouldNotBeDecodedFromBool {
@@ -179,47 +179,47 @@ private struct _KeyedDecodingContainer<Key: CodingKey> : KeyedDecodingContainerP
     func decode<T>(_ type: T.Type, forKey key: Key)   throws -> T where T: Decodable {
         return try decoder(for: key).decode(type)
     }
-
+    
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type,
                                     forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
         return try decoder(for: key).container(keyedBy: type)
     }
-
+    
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
         return try decoder(for: key).unkeyedContainer()
     }
-
+    
     func superDecoder() throws -> Decoder { return try decoder(for: _ObjectCodingKey.super) }
     func superDecoder(forKey key: Key) throws -> Decoder { return try decoder(for: key) }
-
+    
     private func object(for key: CodingKey) throws -> Any {
         guard let object = dictionary[key.stringValue] else {
             throw _keyNotFound(at: codingPath, key, "No value associated with key \(key) (\"\(key.stringValue)\").")
         }
         return object
     }
-
+    
     private func decoder(for key: CodingKey) throws -> ObjectDecoder.Decoder {
         return decoder.decoder(referencing: try object(for: key), as: key)
     }
 }
 
 private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
-
+    
     private let decoder: ObjectDecoder.Decoder
     private let array: [Any]
-
+    
     init(decoder: ObjectDecoder.Decoder, wrapping array: [Any]) {
         self.decoder = decoder
         self.array = array
         self.currentIndex = 0
     }
-
+    
     var codingPath: [CodingKey] { return decoder.codingPath }
     var count: Int? { return array.count }
     var isAtEnd: Bool { return currentIndex >= array.count }
     var currentIndex: Int
-
+    
     mutating func decodeNil() throws -> Bool {
         try throwErrorIfAtEnd(Any?.self)
         if currentObject is NSNull {
@@ -229,7 +229,7 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
             return false
         }
     }
-
+    
     mutating func decode(_ type: Bool.Type)   throws -> Bool { return try currentDecoder { try $0.decode(type) } }
     mutating func decode(_ type: String.Type) throws -> String { return try currentDecoder { try $0.decode(type) } }
     mutating func decode<T>(_ type: T.Type)   throws -> T where T: ShouldNotBeDecodedFromBool {
@@ -238,26 +238,26 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
     mutating func decode<T>(_ type: T.Type)   throws -> T where T: Decodable {
         return try currentDecoder { try $0.decode(type) }
     }
-
+    
     mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> {
         return try currentDecoder { try $0.container(keyedBy: type) }
     }
-
+    
     mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
         return try currentDecoder { try $0.unkeyedContainer() }
     }
-
+    
     mutating func superDecoder() throws -> Decoder {
         return try currentDecoder { $0 }
     }
-
+    
     private var currentKey: CodingKey { return _ObjectCodingKey(index: currentIndex) }
     private var currentObject: Any { return array[currentIndex] }
-
+    
     private func throwErrorIfAtEnd<T>(_ type: T.Type) throws {
         if isAtEnd { throw _valueNotFound(at: codingPath + [currentKey], type, "Unkeyed container is at end.") }
     }
-
+    
     private mutating func currentDecoder<T>(closure: (ObjectDecoder.Decoder) throws -> T) throws -> T {
         try throwErrorIfAtEnd(T.self)
         let decoded: T = try closure(decoder.decoder(referencing: currentObject, as: currentKey))
@@ -304,7 +304,7 @@ extension ObjectDecoder {
     public typealias DataDecodingStrategy = DecodingStrategy<Data>
     /// The strategy to use for decoding `Date` values.
     public typealias DateDecodingStrategy = DecodingStrategy<Date>
-
+    
     /// The strategy to use for decoding `Double` values.
     public typealias DoubleDecodingStrategy = DecodingStrategy<Double>
     /// The strategy to use for decoding `Float` values.
@@ -321,7 +321,7 @@ extension ObjectDecoder.DecodingStrategy {
 extension ObjectDecoder.DecodingStrategy where T == Data {
     /// Defer to `Data` for decoding.
     public static let deferredToData: ObjectDecoder.DataDecodingStrategy? = nil
-
+    
     /// Decode the `Data` from a Base64-encoded string. This is the default strategy.
     public static let base64 = ObjectDecoder.DataDecodingStrategy.custom { decoder in
         guard let data = Data(base64Encoded: try String(from: decoder)) else {
@@ -334,12 +334,12 @@ extension ObjectDecoder.DecodingStrategy where T == Data {
 extension ObjectDecoder.DecodingStrategy where T == Date {
     /// Defer to `Date` for decoding.
     public static let deferredToDate: ObjectDecoder.DateDecodingStrategy? = nil
-
+    
     /// Decode the `Date` as a UNIX timestamp from a `Double`.
     public static let secondsSince1970 = ObjectDecoder.DateDecodingStrategy.custom { decoder in
         Date(timeIntervalSince1970: try Double(from: decoder))
     }
-
+    
     /// Decode the `Date` as UNIX millisecond timestamp from a `Double`.
     public static let millisecondsSince1970 = ObjectDecoder.DateDecodingStrategy.custom { decoder in
         Date(timeIntervalSince1970: try Double(from: decoder) / 1000.0)
@@ -352,7 +352,7 @@ extension ObjectDecoder.DecodingStrategy where T == Date {
         }
         return date
     }
-
+    
     /// Decode the `Date` as a string parsed by the given formatter.
     public static func formatted(_ formatter: DateFormatter) -> ObjectDecoder.DateDecodingStrategy {
         return .custom { decoder in
@@ -376,7 +376,7 @@ extension ObjectDecoder.DecodingStrategy where T == Decimal {
 
 extension ObjectDecoder.DecodingStrategy where T == Double {
     public static let deferredToDouble: ObjectDecoder.DoubleDecodingStrategy? = nil
-
+    
     public static func convertNonConformingFloatFromString(_ positiveInfinity: String,
                                                            _ negativeInfinity: String,
                                                            _ nan: String) -> ObjectDecoder.DoubleDecodingStrategy {
@@ -399,7 +399,7 @@ extension ObjectDecoder.DecodingStrategy where T == Double {
 
 extension ObjectDecoder.DecodingStrategy where T == Float {
     public static let deferredToFloat: ObjectDecoder.FloatDecodingStrategy? = nil
-
+    
     public static func convertNonConformingFloatFromString(_ positiveInfinity: String,
                                                            _ negativeInfinity: String,
                                                            _ nan: String) -> ObjectDecoder.FloatDecodingStrategy {

@@ -20,14 +20,14 @@ extension CodingPathElement {
         TODO.whole(.rethink)
         
         switch self {
-        case .key(let value):
-            return .init(value)
-        case .unkeyedAccess(let value):
-            return .init(intValue: value)
-        case .super:
-            return .init(stringValue: "super")
-        case .keyedSuper(let value):
-            return .init(value)
+            case .key(let value):
+                return .init(value)
+            case .unkeyedAccess(let value):
+                return .init(intValue: value)
+            case .super:
+                return .init(stringValue: "super")
+            case .keyedSuper(let value):
+                return .init(value)
         }
     }
 }

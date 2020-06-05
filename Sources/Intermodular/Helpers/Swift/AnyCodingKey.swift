@@ -14,43 +14,43 @@ public struct AnyCodingKey: CodingKey, Identifier {
         case stringAndInteger(String, Int)
         case opaque(CodingKey)
     }
-
+    
     private let storage: Storage
-
+    
     public var stringValue: String {
         switch storage {
-        case .string(let value):
-            return value
-        case .integer(let value):
-            return .init(value)
-        case .stringAndInteger(let value, _):
-            return value
-        case .opaque(let value):
-            return value.stringValue
+            case .string(let value):
+                return value
+            case .integer(let value):
+                return .init(value)
+            case .stringAndInteger(let value, _):
+                return value
+            case .opaque(let value):
+                return value.stringValue
         }
     }
-
+    
     public var intValue: Int? {
         switch storage {
-        case .string:
-            return nil
-        case .integer(let value):
-            return value
-        case .stringAndInteger(_, let value):
-            return value
-        case .opaque(let value):
-            return value.intValue
+            case .string:
+                return nil
+            case .integer(let value):
+                return value
+            case .stringAndInteger(_, let value):
+                return value
+            case .opaque(let value):
+                return value.intValue
         }
     }
-
+    
     public init(stringValue: String) {
         storage = .string(stringValue)
     }
-
+    
     public init(intValue: Int) {
         storage = .integer(intValue)
     }
-
+    
     public init(_ key: CodingKey) {
         storage = .opaque(key)
     }
@@ -61,7 +61,7 @@ public struct AnyCodingKey: CodingKey, Identifier {
 extension AnyCodingKey: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-
+        
         if let value = try? container.decode(String.self) {
             self.storage = .string(value)
         } else if let value = try? container.decode(Int.self) {
@@ -70,17 +70,17 @@ extension AnyCodingKey: Codable {
             throw DecodingError.dataCorrupted(.init(codingPath: container.codingPath))
         }
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         switch storage {
-        case .string(let value):
-            try value.encode(to: encoder)
-        case .integer(let value):
-            try value.encode(to: encoder)
-        case .stringAndInteger(let value, _):
-            try value.encode(to: encoder)
-        case .opaque(let value):
-            try value.stringValue.encode(to: encoder)
+            case .string(let value):
+                try value.encode(to: encoder)
+            case .integer(let value):
+                try value.encode(to: encoder)
+            case .stringAndInteger(let value, _):
+                try value.encode(to: encoder)
+            case .opaque(let value):
+                try value.stringValue.encode(to: encoder)
         }
     }
 }

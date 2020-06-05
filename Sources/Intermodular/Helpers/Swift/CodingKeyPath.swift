@@ -9,9 +9,9 @@ import Swift
 
 public struct CodingKeyPath: Hashable, ImplementationForwardingWrapper {
     public typealias Value = LinkedList<AnyCodingKey>
-
+    
     public let value: Value
-
+    
     public init(_ value: Value) {
         self.value = value
     }
@@ -23,7 +23,7 @@ extension CodingKeyPath: Codable {
     public init(from decoder: Decoder) throws {
         self.init(try .init(from: decoder))
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         try value.encode(to: encoder)
     }

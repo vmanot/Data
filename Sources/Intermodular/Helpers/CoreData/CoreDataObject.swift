@@ -5,12 +5,12 @@
 import CoreData
 import Swift
 
-///
 /// A modern `NSManagedObject` subclass.
-///
 open class CoreDataObject: NSManagedObject {
+    var areInitialAttributesSetup: Bool = false
+    
     open func setupInitialAttributes() {
-        
+        areInitialAttributesSetup = true
     }
     
     /// Derive and set any calculated attributes.
@@ -23,7 +23,10 @@ open class CoreDataObject: NSManagedObject {
     override open func awakeFromInsert() {
         super.awakeFromInsert()
         
-        setupInitialAttributes()
+        if !areInitialAttributesSetup {
+            setupInitialAttributes()
+        }
+        
         deriveAttributes()
     }
     
@@ -35,8 +38,6 @@ open class CoreDataObject: NSManagedObject {
     
     override open func willSave() {
         super.willSave()
-        
-        deriveAttributes()
     }
     
     override open func willAccessValue(forKey key: String?) {

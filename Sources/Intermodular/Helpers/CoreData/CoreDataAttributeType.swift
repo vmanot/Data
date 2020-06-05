@@ -16,7 +16,7 @@ extension CoreDataAttributeType {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
         object.primitiveValue(forKey: key.stringValue) as! Self
     }
-
+    
     public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
         let key = key.stringValue
         
@@ -29,10 +29,10 @@ extension CoreDataAttributeType {
         return object.primitiveValue(forKey: key) as! Self
     }
     
-    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {        
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
         return object.setPrimitiveValue(self, forKey: key.stringValue)
     }
-
+    
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
         let key = key.stringValue
         
@@ -50,6 +50,24 @@ extension CoreDataAttributeType {
 
 extension Bool: CoreDataAttributeType {
     
+}
+
+extension Character: CoreDataAttributeType {
+    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
+        .init(String.decodePrimitive(from: object, forKey: key))
+    }
+    
+    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
+        .init(String.decode(from: object, forKey: key))
+    }
+    
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
+        stringValue.encodePrimitive(to: object, forKey: key)
+    }
+    
+    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
+        stringValue.encode(to: object, forKey: key)
+    }
 }
 
 extension Data: CoreDataAttributeType {
@@ -89,6 +107,48 @@ extension Int64: CoreDataAttributeType {
 }
 
 extension NSNumber: CoreDataAttributeType {
+    
+}
+
+extension Optional: CoreDataFieldCoder where Wrapped: CoreDataFieldCoder {
+    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
+        object.primitiveValue(forKey: key.stringValue) as! Self
+    }
+    
+    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
+        let key = key.stringValue
+        
+        object.willAccessValue(forKey: key)
+        
+        defer {
+            object.didAccessValue(forKey: key)
+        }
+        
+        return object.primitiveValue(forKey: key) as! Self
+    }
+    
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
+        return object.setPrimitiveValue(self, forKey: key.stringValue)
+    }
+    
+    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
+        let key = key.stringValue
+        
+        object.willChangeValue(forKey: key)
+        
+        defer {
+            object.didChangeValue(forKey: key)
+        }
+        
+        return object.setPrimitiveValue(self, forKey: key)
+    }
+}
+
+extension Optional: CoreDataAttributeType where Wrapped: CoreDataAttributeType {
+    
+}
+
+extension String: CoreDataAttributeType {
     
 }
 
