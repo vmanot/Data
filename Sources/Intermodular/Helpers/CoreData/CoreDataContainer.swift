@@ -75,4 +75,10 @@ extension CoreDataContainer {
             try! base.viewContext.save()
         }
     }
+    
+    public func destroyAndRebuild() {
+        try! base.persistentStoreCoordinator.destroyAll()
+        
+        base.loadPersistentStores().subscribe(storeIn: cancellables)
+    }
 }

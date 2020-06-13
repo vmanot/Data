@@ -14,16 +14,28 @@ let package = Package(
         .library(name: "Data", targets: ["Data"])
     ],
     dependencies: [
-        .package(path: "../Compute"),
-        .package(path: "../Concurrency"),
-        .package(path: "../FoundationX"),
-        .package(path: "../LinearAlgebra"),
-        .package(path: "../POSIX"),
-        .package(path: "../Runtime"),
-        .package(path: "../Swallow")
+        .package(url: "git@github.com:vmanot/Compute", .branch("master")),
+        .package(url: "git@github.com:vmanot/Concurrency", .branch("master")),
+        .package(url: "git@github.com:vmanot/FoundationX", .branch("master")),
+        .package(url: "git@github.com:vmanot/LinearAlgebra", .branch("master")),
+        .package(url: "git@github.com:vmanot/POSIX", .branch("master")),
+        .package(url: "git@github.com:vmanot/Runtime", .branch("master")),
+        .package(url: "git@github.com:vmanot/Swallow", .branch("master"))
     ],
     targets: [
-        .target(name: "Data", dependencies: ["Compute", "Concurrency", "FoundationX", "LinearAlgebra", "POSIX", "Runtime", "Swallow"], path: "Sources")
+        .target(
+            name: "Data",
+            dependencies: [
+                "Compute",
+                "Concurrency",
+                "FoundationX",
+                "LinearAlgebra",
+                "POSIX",
+                "Runtime",
+                "Swallow"
+            ],
+            path: "Sources"
+        )
     ],
     swiftLanguageVersions: [
         .version("5.1")

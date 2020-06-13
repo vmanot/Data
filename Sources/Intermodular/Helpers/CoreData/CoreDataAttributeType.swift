@@ -111,36 +111,36 @@ extension NSNumber: CoreDataAttributeType {
 }
 
 extension Optional: CoreDataFieldCoder where Wrapped: CoreDataFieldCoder {
-    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
-        object.primitiveValue(forKey: key.stringValue) as! Self
-    }
-    
-    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
-        let key = key.stringValue
-        
-        object.willAccessValue(forKey: key)
-        
-        defer {
-            object.didAccessValue(forKey: key)
+    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+        if object.primitiveValue(forKey: key.stringValue) == nil {
+            return .none
+        } else {
+            return try Wrapped.decodePrimitive(from: object, forKey: key)
         }
-        
-        return object.primitiveValue(forKey: key) as! Self
     }
     
-    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
-        return object.setPrimitiveValue(self, forKey: key.stringValue)
-    }
-    
-    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
-        let key = key.stringValue
-        
-        object.willChangeValue(forKey: key)
-        
-        defer {
-            object.didChangeValue(forKey: key)
+    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+        if object.value(forKey: key.stringValue) == nil {
+            return .none
+        } else {
+            return try Wrapped.decodePrimitive(from: object, forKey: key)
         }
-        
-        return object.setPrimitiveValue(self, forKey: key)
+    }
+    
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        if let value = self {
+            try value.encodePrimitive(to: object, forKey: key)
+        } else {
+            object.setPrimitiveValue(nil, forKey: key.stringValue)
+        }
+    }
+    
+    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        if let value = self {
+            try value.encode(to: object, forKey: key)
+        } else {
+            object.setValue (nil, forKey: key.stringValue)
+        }
     }
 }
 

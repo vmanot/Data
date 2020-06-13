@@ -11,13 +11,9 @@ extension NSPersistentStoreCoordinator {
         return managedObjectModel.entitiesByName[name]
     }
     
-    public func eraseAll() throws {
+    public func destroyAll() throws {
         for store in persistentStores {
-            try remove(store)
-            
-            if let url = store.url {
-                try FileManager.default.removeItem(at: url)
-            }
+            try store.destroy()
         }
     }
 }
