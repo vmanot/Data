@@ -7,7 +7,7 @@ import Foundation
 import Swallow
 
 @propertyWrapper
-public struct CoreDataField<Value> {
+public struct NSAttribute<Value> {
     public let key: AnyStringKey
     public var wrappedValue: Value
     
@@ -32,14 +32,14 @@ public struct CoreDataField<Value> {
     }
 }
 
-extension CoreDataField where Value: Codable {
+extension NSAttribute where Value: Codable {
     @inlinable
     public init(key: String, defaultValue: Value) {
         self.key = .init(stringValue: key)
         self.wrappedValue = defaultValue
         
-        self.encodeImpl = { try _CodableToCoreDataFieldCoder($0).encode(to: $1, forKey: AnyStringKey(stringValue: key)) }
-        self.decodeImpl = { try _CodableToCoreDataFieldCoder<Value>.decode(from: $0, forKey: AnyStringKey(stringValue: key)).value }
+        self.encodeImpl = { try _CodableToNSAttributeCoder($0).encode(to: $1, forKey: AnyStringKey(stringValue: key)) }
+        self.decodeImpl = { try _CodableToNSAttributeCoder<Value>.decode(from: $0, forKey: AnyStringKey(stringValue: key)).value }
     }
     
     @inlinable
@@ -47,12 +47,12 @@ extension CoreDataField where Value: Codable {
         self.key = .init(stringValue: key)
         self.wrappedValue = defaultValue
         
-        self.encodeImpl = { try _OptionalCodableToCoreDataFieldCoder($0).encode(to: $1, forKey: AnyStringKey(stringValue: key)) }
-        self.decodeImpl = { try _OptionalCodableToCoreDataFieldCoder<T>.decode(from: $0, forKey: AnyStringKey(stringValue: key)).value }
+        self.encodeImpl = { try _OptionalCodableToNSAttributeCoder($0).encode(to: $1, forKey: AnyStringKey(stringValue: key)) }
+        self.decodeImpl = { try _OptionalCodableToNSAttributeCoder<T>.decode(from: $0, forKey: AnyStringKey(stringValue: key)).value }
     }
 }
 
-extension CoreDataField where Value: CoreDataFieldCoder {
+extension NSAttribute where Value: NSAttributeCoder {
     @inlinable
     public init(key: String, defaultValue: Value) {
         self.key = .init(stringValue: key)
@@ -71,7 +71,7 @@ extension CoreDataField where Value: CoreDataFieldCoder {
 // MARK: - Auxiliary Implementation -
 
 @usableFromInline
-struct _CodableToCoreDataFieldCoder<T: Codable>: CoreDataFieldCoder {
+struct _CodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
     @usableFromInline
     let value: T
     
@@ -102,7 +102,7 @@ struct _CodableToCoreDataFieldCoder<T: Codable>: CoreDataFieldCoder {
 }
 
 @usableFromInline
-struct _OptionalCodableToCoreDataFieldCoder<T: Codable>: CoreDataFieldCoder {
+struct _OptionalCodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
     @usableFromInline
     let value: T?
     

@@ -5,8 +5,8 @@
 import CoreData
 import Swift
 
-/// A modern `NSManagedObject` subclass.
-open class CoreDataObject: NSManagedObject {
+/// A `NSManagedObject` subclass with modern provisions.
+open class NSXManagedObject: NSManagedObject {
     var areInitialAttributesSetup: Bool = false
     
     open func setupInitialAttributes() {

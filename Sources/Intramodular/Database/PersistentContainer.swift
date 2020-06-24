@@ -7,7 +7,7 @@ import Foundation
 import Merge
 import Swift
 
-public final class CoreDataContainer: ObservableObject {
+public final class PersistentContainer: ObservableObject {
     private let cancellables = Cancellables()
     
     public let base: NSPersistentContainer
@@ -31,7 +31,7 @@ public final class CoreDataContainer: ObservableObject {
         name: String,
         managedObjectModel: NSManagedObjectModel? = nil,
         cloudKitContainerIdentifier: String
-    ) -> CoreDataContainer {
+    ) -> PersistentContainer {
         if let managedObjectModel = managedObjectModel {
             return .init(
                 base: NSPersistentCloudKitContainer(
@@ -49,7 +49,15 @@ public final class CoreDataContainer: ObservableObject {
     }
 }
 
-extension CoreDataContainer {
+extension PersistentContainer {
+    public func applicationGroupID(_ id: String) -> PersistentContainer {
+        base.persistentStoreDescriptions = [.init(url: FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id)!.appendingPathComponent(base.name + ".sqlite"))]
+        
+        return self
+    }
+}
+
+extension PersistentContainer {
     public func loadViewContext() {
         guard let description = base.persistentStoreDescriptions.first else {
             fatalError("Could not retrieve a persistent store description.")

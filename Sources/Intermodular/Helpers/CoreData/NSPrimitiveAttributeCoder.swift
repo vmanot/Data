@@ -6,13 +6,13 @@ import Foundation
 import CoreData
 import Swift
 
-public protocol CoreDataAttributeType: CoreDataFieldCoder {
+public protocol NSPrimitiveAttributeCoder: NSAttributeCoder {
     
 }
 
 // MARK: - Implementation -
 
-extension CoreDataAttributeType {
+extension NSPrimitiveAttributeCoder {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
         object.primitiveValue(forKey: key.stringValue) as! Self
     }
@@ -48,11 +48,11 @@ extension CoreDataAttributeType {
 
 // MARK: - Concrete Implementations -
 
-extension Bool: CoreDataAttributeType {
+extension Bool: NSPrimitiveAttributeCoder {
     
 }
 
-extension Character: CoreDataAttributeType {
+extension Character: NSPrimitiveAttributeCoder {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) -> Self {
         .init(String.decodePrimitive(from: object, forKey: key))
     }
@@ -70,47 +70,47 @@ extension Character: CoreDataAttributeType {
     }
 }
 
-extension Data: CoreDataAttributeType {
+extension Data: NSPrimitiveAttributeCoder {
     
 }
 
-extension Decimal: CoreDataAttributeType {
+extension Decimal: NSPrimitiveAttributeCoder {
     
 }
 
-extension Double: CoreDataAttributeType {
+extension Double: NSPrimitiveAttributeCoder {
     
 }
 
-extension Float: CoreDataAttributeType {
+extension Float: NSPrimitiveAttributeCoder {
     
 }
 
-extension Int: CoreDataAttributeType {
+extension Int: NSPrimitiveAttributeCoder {
     
 }
 
-extension Int8: CoreDataAttributeType {
+extension Int8: NSPrimitiveAttributeCoder {
     
 }
 
-extension Int16: CoreDataAttributeType {
+extension Int16: NSPrimitiveAttributeCoder {
     
 }
 
-extension Int32: CoreDataAttributeType {
+extension Int32: NSPrimitiveAttributeCoder {
     
 }
 
-extension Int64: CoreDataAttributeType {
+extension Int64: NSPrimitiveAttributeCoder {
     
 }
 
-extension NSNumber: CoreDataAttributeType {
+extension NSNumber: NSPrimitiveAttributeCoder {
     
 }
 
-extension Optional: CoreDataFieldCoder where Wrapped: CoreDataFieldCoder {
+extension Optional: NSAttributeCoder where Wrapped: NSAttributeCoder {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         if object.primitiveValue(forKey: key.stringValue) == nil {
             return .none
@@ -144,14 +144,14 @@ extension Optional: CoreDataFieldCoder where Wrapped: CoreDataFieldCoder {
     }
 }
 
-extension Optional: CoreDataAttributeType where Wrapped: CoreDataAttributeType {
+extension Optional: NSPrimitiveAttributeCoder where Wrapped: NSPrimitiveAttributeCoder {
     
 }
 
-extension String: CoreDataAttributeType {
+extension String: NSPrimitiveAttributeCoder {
     
 }
 
-extension UUID: CoreDataAttributeType {
+extension UUID: NSPrimitiveAttributeCoder {
     
 }

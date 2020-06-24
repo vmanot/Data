@@ -6,7 +6,7 @@ import CoreData
 import Swallow
 
 /// A CoreData field coder.
-public protocol CoreDataFieldCoder {
+public protocol NSAttributeCoder {
     static func decodePrimitive<Key: CodingKey>(from _: NSManagedObject, forKey _: Key) throws -> Self
     static func decode<Key: CodingKey>(from _: NSManagedObject, forKey _: Key) throws -> Self
     
@@ -16,7 +16,7 @@ public protocol CoreDataFieldCoder {
 
 // MARK: - Implementation -
 
-extension RawRepresentable where RawValue: CoreDataFieldCoder, Self: CoreDataFieldCoder {
+extension RawRepresentable where RawValue: NSAttributeCoder, Self: NSAttributeCoder {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         try Self(rawValue: try RawValue.decodePrimitive(from: object, forKey: key)).unwrap()
     }
@@ -34,7 +34,7 @@ extension RawRepresentable where RawValue: CoreDataFieldCoder, Self: CoreDataFie
     }
 }
 
-extension Wrapper where Value: CoreDataFieldCoder, Self: CoreDataFieldCoder {
+extension Wrapper where Value: NSAttributeCoder, Self: NSAttributeCoder {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         Self(try Value.decodePrimitive(from: object, forKey: key))
     }
