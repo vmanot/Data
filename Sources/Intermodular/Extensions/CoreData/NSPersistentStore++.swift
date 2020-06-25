@@ -8,9 +8,7 @@ import Swift
 extension NSPersistentStore {
     public func destroy() throws {
         guard let persistentStoreCoordinator = persistentStoreCoordinator else {
-            assertionFailure()
-            
-            return
+            return assertionFailure()
         }
         
         let url = try self.url.unwrap()
