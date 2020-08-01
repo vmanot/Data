@@ -42,7 +42,27 @@ extension AnyCodable: AnyCodableUnconditionalConvertible {
 
 extension AnyCodable: Codable {
     public init(from decoder: Decoder) throws {
-        if let container = try? decoder.singleValueContainer() {
+        if var container = try? decoder.unkeyedContainer() {
+            var value: [AnyCodable] = []
+            
+            container.count.map({ value.reserveCapacity($0) })
+            
+            while !container.isAtEnd {
+                value.append(try container.decode(AnyCodable.self))
+            }
+            
+            self = .array(value)
+        } else if let container = try? decoder.container(keyedBy: AnyCodingKey.self) {
+            var value: [AnyCodingKey: AnyCodable] = [:]
+            
+            value.reserveCapacity(container.allKeys.count)
+            
+            for key in container.allKeys {
+                value[key] = try container.decode(AnyCodable.self, forKey: key)
+            }
+            
+            self = .dictionary(value)
+        } else if let container = try? decoder.singleValueContainer() {
             if container.decodeNil() {
                 self = .none
             } else if let value = try? container.decode(Bool.self) {
@@ -63,26 +83,6 @@ extension AnyCodable: Codable {
                     )
                 )
             }
-        } else if var container = try? decoder.unkeyedContainer() {
-            var value: [AnyCodable] = []
-            
-            container.count.map({ value.reserveCapacity($0) })
-            
-            while !container.isAtEnd {
-                value.append(try container.decode(AnyCodable.self))
-            }
-            
-            self = .array(value)
-        } else if let container = try? decoder.container(keyedBy: AnyCodingKey.self) {
-            var value: [AnyCodingKey: AnyCodable] = [:]
-            
-            value.reserveCapacity(container.allKeys.count)
-            
-            for key in container.allKeys {
-                value[key] = try container.decode(AnyCodable.self, forKey: key)
-            }
-            
-            self = .dictionary(value)
         } else {
             self = .none
         }

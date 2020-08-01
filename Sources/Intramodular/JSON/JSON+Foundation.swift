@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 extension JSON {
     public init(jsonObjectData data: Data) throws {
@@ -18,7 +17,7 @@ extension JSON {
     
     public init(jsonObject: Any?) throws {
         if let jsonObject = jsonObject, !(jsonObject is NSNull) {
-            if let json = (((try? (jsonObject as? JSONConvertible)?.jsonValue()) as JSON??)), let _json = json {
+            if let json = (((try? (jsonObject as? JSONConvertible)?.json()) as JSON??)), let _json = json {
                 self = _json
             } else {
                 let data = try JSONSerialization.data(withJSONObject: jsonObject, options: [])

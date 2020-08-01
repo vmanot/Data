@@ -5,9 +5,9 @@
 import Swift
 
 public struct DecoderUnwrapper: Decodable {
-    public let decoder: Decoder
+    public let value: Decoder
     
     public init(from decoder: Decoder) throws {
-        self.decoder = decoder
+        self.value = decoder
     }
 }

@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 public enum CodingPathElement {
     case key(CodingKey)

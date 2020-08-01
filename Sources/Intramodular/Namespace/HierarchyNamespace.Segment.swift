@@ -4,15 +4,15 @@
 
 import Swallow
 
-public enum NamespaceSegment: Hashable {
+public enum HierarchicalNamespaceSegment: Hashable {
     case string(String)
-    case aggregate([NamespaceSegment])
+    case aggregate([Self])
     case none
 }
 
 // MARK: - Extensions -
 
-extension NamespaceSegment {
+extension HierarchicalNamespaceSegment {
     public var isNone: Bool {
         if case .none = self {
             return true
@@ -20,90 +20,90 @@ extension NamespaceSegment {
             return true
         }
     }
-
+    
     public var isSome: Bool {
-        return !isNone
+        !isNone
     }
-
-    public func toArray() -> [NamespaceSegment] {
+    
+    public func toArray() -> [Self] {
         switch self {
-        case .none:
-            return []
-        case .string:
-            return [self]
-        case .aggregate(let value):
-            return value
+            case .none:
+                return []
+            case .string:
+                return [self]
+            case .aggregate(let value):
+                return value
         }
     }
 }
 
 // MARK: - Protocol Implementations -
 
-extension NamespaceSegment: Codable {
+extension HierarchicalNamespaceSegment: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-
+        
         if container.decodeNil() {
             self = .none
         } else if let value = try? container.decode(String.self) {
             self = .string(value)
-        } else if let value = try? container.decode([NamespaceSegment].self) {
+        } else if let value = try? container.decode([Self].self) {
             self = .aggregate(value)
         } else {
             throw DecodingError.dataCorrupted(.init(codingPath: container.codingPath))
         }
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         switch self {
-        case .string(let value):
-            try encoder.encode(value)
-        case .aggregate(let value):
-            try encoder.encode(value)
-        case .none:
-            try encoder.encodeNil()
+            case .string(let value):
+                try encoder.encode(value)
+            case .aggregate(let value):
+                try encoder.encode(value)
+            case .none:
+                try encoder.encodeNil()
         }
     }
 }
 
-extension NamespaceSegment: CustomStringConvertible {
+extension HierarchicalNamespaceSegment: CustomStringConvertible {
     public var description: String {
         switch self {
-        case .string(let value):
-            return value
-        case .aggregate(let value):
-            return "(" + value.map({ $0.description }).joined(separator: ".") + ")"
-        case .none:
-            return .init()
+            case .string(let value):
+                return value
+            case .aggregate(let value):
+                return "(" + value.map({ $0.description }).joined(separator: ".") + ")"
+            case .none:
+                return .init()
         }
     }
 }
 
-extension NamespaceSegment: ExpressibleByArrayLiteral {
-    public typealias ArrayLiteralElement = NamespaceSegment
-
+extension HierarchicalNamespaceSegment: ExpressibleByArrayLiteral {
+    public typealias ArrayLiteralElement = Self
+    
     public init(arrayLiteral elements: ArrayLiteralElement...) {
         self = .aggregate(elements)
     }
 }
 
-extension NamespaceSegment: ExpressibleByStringLiteral {
+extension HierarchicalNamespaceSegment: ExpressibleByStringLiteral {
     public typealias StringLiteralType = String
-
+    
     public init(stringLiteral value: StringLiteralType) {
         self = .string(value)
     }
 }
 
-extension NamespaceSegment: LosslessStringConvertible {
+extension HierarchicalNamespaceSegment: LosslessStringConvertible {
     public init(_ description: String) {
         guard !description.isEmpty else {
             self = .none
             return
         }
-
+        
         let components = description.components(separatedBy: ".")
-
+        
         if components.count == 0 {
             self = .none
         } else if components.count == 1 {

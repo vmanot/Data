@@ -5,30 +5,32 @@
 import Swallow
 
 /// Represents a namespace in a hierarchy-based system.
-public struct Namespace: Codable, Hashable {
-    public var segments: [NamespaceSegment]
+public struct HierarchicalNamespace: Codable, Hashable {
+    public typealias Segment = HierarchicalNamespaceSegment
     
-    public static var none: Namespace {
-        return .init([.none])
+    public var segments: [Segment]
+    
+    public static var none: HierarchicalNamespace {
+        .init([.none])
     }
     
     public init() {
         self.segments = []
     }
     
-    public init(_ segment: NamespaceSegment) {
+    public init(_ segment: Segment) {
         self.segments = [segment]
     }
     
-    public func join(_ other: Namespace) -> Namespace {
+    public func join(_ other: Self) -> Self {
         appending(contentsOf: other)
     }
 }
 
 // MARK: - Extensions -
 
-extension Namespace {
-    public var singleSegment: NamespaceSegment? {
+extension HierarchicalNamespace {
+    public var singleSegment: Segment? {
         guard count == 1 else {
             return nil
         }
@@ -36,7 +38,7 @@ extension Namespace {
         return self[0]
     }
     
-    public var twoSegments: (NamespaceSegment, NamespaceSegment)? {
+    public var twoSegments: (Segment, Segment)? {
         guard count == 2 else {
             return nil
         }
@@ -63,7 +65,7 @@ extension Namespace {
 
 // MARK: - Protocol Implementations -
 
-extension Namespace: Collection {
+extension HierarchicalNamespace: Collection {
     public var startIndex: Int {
         segments.startIndex
     }
@@ -72,41 +74,41 @@ extension Namespace: Collection {
         segments.endIndex
     }
     
-    public subscript(_ index: Int) -> NamespaceSegment {
+    public subscript(_ index: Int) -> Segment {
         segments[index]
     }
 }
 
-extension Namespace: CustomStringConvertible {
+extension HierarchicalNamespace: CustomStringConvertible {
     public var description: String {
         segments.map({ $0.description }).joined(separator: ".")
     }
 }
 
-extension Namespace: ExtensibleSequence {
-    public typealias Element = NamespaceSegment
+extension HierarchicalNamespace: ExtensibleSequence {
+    public typealias Element = Segment
     
-    public mutating func insert(_ segment: NamespaceSegment) {
+    public mutating func insert(_ segment: Segment) {
         segments.insert(segment)
     }
     
-    public mutating func append(_ segment: NamespaceSegment) {
+    public mutating func append(_ segment: Segment) {
         segments.append(segment)
     }
     
-    public func makeIterator() -> Array<NamespaceSegment>.Iterator {
+    public func makeIterator() -> Array<Segment>.Iterator {
         segments.makeIterator()
     }
 }
 
-extension Namespace: SequenceInitiableSequence {
+extension HierarchicalNamespace: SequenceInitiableSequence {
     public init<S: Sequence>(_ source: S) where S.Element == Element {
         segments = .init(source)
     }
 }
 
-extension Namespace: LosslessStringConvertible {
+extension HierarchicalNamespace: LosslessStringConvertible {
     public init(_ description: String) {
-        segments = NamespaceSegment(description).toArray()
+        segments = Segment(description).toArray()
     }
 }

@@ -4,66 +4,78 @@
 
 import Foundation
 import Swallow
-import Swift
 
 public protocol DateValueCodableStrategy {
     associatedtype RawValue: Codable
     
+    static func encode(_ date: Date) throws -> RawValue
     static func decode(_ value: RawValue) throws -> Date
-    static func encode(_ date: Date) -> RawValue
 }
 
 @propertyWrapper
 public struct DateValue<Formatter: DateValueCodableStrategy>: Codable {
-    private let value: Formatter.RawValue
-    
     public var wrappedValue: Date
     
     public init(wrappedValue: Date) {
         self.wrappedValue = wrappedValue
-        self.value = Formatter.encode(wrappedValue)
+    }
+    
+    public init?(rawValue: Formatter.RawValue) {
+        if let wrappedValue = try? Formatter.decode(rawValue) {
+            self.wrappedValue = wrappedValue
+        } else {
+            return nil
+        }
     }
     
     public init(from decoder: Decoder) throws {
-        self.value = try Formatter.RawValue(from: decoder)
-        self.wrappedValue = try Formatter.decode(value)
+        self.wrappedValue = try Formatter.decode(Formatter.RawValue(from: decoder))
     }
     
     public func encode(to encoder: Encoder) throws {
-        try value.encode(to: encoder)
+        try Formatter.encode(wrappedValue).encode(to: encoder)
     }
+}
+
+extension DateValue: Equatable where Formatter.RawValue: Equatable {
+    
+}
+
+extension DateValue: Hashable where Formatter.RawValue: Hashable {
+    
 }
 
 @propertyWrapper
 public struct OptionalDateValue<Formatter: DateValueCodableStrategy>: Codable {
-    private var value: Formatter.RawValue? = nil
-    
     public var wrappedValue: Date?
     
     public init(wrappedValue: Date?) {
         self.wrappedValue = wrappedValue
-        self.value = wrappedValue.map(Formatter.encode)
     }
     
     public init() {
         self.wrappedValue = nil
-        self.value = wrappedValue.map(Formatter.encode)
     }
     
     public init(from decoder: Decoder) throws {
-        do {
-            guard try !decoder.decodeNil() else {
-                return
-            }
-        } catch(_) {
+        if (try? decoder.decodeNil()) ?? false {
             
         }
         
-        self.value = try Formatter.RawValue(from: decoder)
         self.wrappedValue = try Formatter.decode(try Formatter.RawValue(from: decoder))
     }
     
     public func encode(to encoder: Encoder) throws {
-        try value.encode(to: encoder)
+        if let wrappedValue = wrappedValue {
+            try Formatter.encode(wrappedValue).encode(to: encoder)
+        }
     }
+}
+
+extension OptionalDateValue: Equatable where Formatter.RawValue: Equatable {
+    
+}
+
+extension OptionalDateValue: Hashable where Formatter.RawValue: Hashable {
+    
 }

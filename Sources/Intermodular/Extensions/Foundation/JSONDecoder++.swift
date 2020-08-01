@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 fileprivate extension CodingUserInfoKey {
     static let fragmentBoxedType = CodingUserInfoKey(rawValue: "fragmentBoxedType")!

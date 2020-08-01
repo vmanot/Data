@@ -14,7 +14,7 @@ public struct NSCodingToEncodable: Encodable {
     }
 
     public func encode(to encoder: Encoder) throws {
-        base.encode(with: NSCodingEncoderWrapper(base: encoder))
+        base.encode(with: EncoderNSCodingAdaptor(base: encoder))
     }
 }
 
@@ -26,26 +26,10 @@ public struct HashableNSCodingToEncodable: Encodable, Hashable {
     }
 
     public func encode(to encoder: Encoder) throws {
-        base.encode(with: NSCodingEncoderWrapper(base: encoder))
+        base.encode(with: EncoderNSCodingAdaptor(base: encoder))
     }
 
     public func hash(into hasher: inout Hasher) {
         base.hash(into: &hasher)
-    }
-}
-
-public struct NSCodingToCodable<Base: NSObject & NSSecureCoding>: Codable {
-    public let base: Base
-
-    public init(base: Base) {
-        self.base = base
-    }
-
-    public init(from decoder: Decoder) throws {
-        self.init(base: try Base.init(coder: NSCodingDecoderWrapper(base: decoder)).unwrap())
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        base.encode(with: NSCodingEncoderWrapper(base: encoder))
     }
 }

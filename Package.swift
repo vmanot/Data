@@ -17,8 +17,7 @@ let package = Package(
         .package(url: "git@github.com:vmanot/Compute", .branch("master")),
         .package(url: "git@github.com:vmanot/Concurrency", .branch("master")),
         .package(url: "git@github.com:vmanot/FoundationX", .branch("master")),
-        .package(url: "git@github.com:vmanot/LinearAlgebra", .branch("master")),
-        .package(url: "git@github.com:vmanot/POSIX", .branch("master")),
+        .package(url: "git@github.com:vmanot/Merge", .branch("master")),
         .package(url: "git@github.com:vmanot/Runtime", .branch("master")),
         .package(url: "git@github.com:vmanot/Swallow", .branch("master"))
     ],
@@ -29,8 +28,7 @@ let package = Package(
                 "Compute",
                 "Concurrency",
                 "FoundationX",
-                "LinearAlgebra",
-                "POSIX",
+                "Merge",
                 "Runtime",
                 "Swallow"
             ],

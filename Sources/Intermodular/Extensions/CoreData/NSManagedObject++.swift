@@ -4,7 +4,6 @@
 
 import CoreData
 import Swallow
-import Swift
 
 extension NSObjectProtocol where Self: NSManagedObject {
     public func primitiveValueExists(forKey key: String) -> Bool {

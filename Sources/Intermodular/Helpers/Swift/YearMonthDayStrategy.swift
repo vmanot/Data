@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 /// Decodes `String` values of format `y-MM-dd` as a `Date`.
 ///

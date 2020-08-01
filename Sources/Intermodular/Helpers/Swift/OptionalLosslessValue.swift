@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 /// Decodes Codable values into their respective preferred types.
 ///

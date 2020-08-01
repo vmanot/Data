@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 extension Encodable {
     public func toObjectDecoder() throws -> Decoder {
@@ -13,7 +12,7 @@ extension Encodable {
             ObjectEncoder().encode(self)
         )
         
-        return wrapper.decoder
+        return wrapper.value
     }
 }
 

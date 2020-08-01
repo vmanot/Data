@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 extension Int: DataCodable {
     public typealias DataEncodingStrategy = BinaryDataEncodingStrategy

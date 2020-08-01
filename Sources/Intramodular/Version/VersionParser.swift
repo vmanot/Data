@@ -5,7 +5,6 @@
 import Foundation
 import FoundationX
 import Swallow
-import Swift
 
 private enum VersionParserError: Error {
     case missingMinorComponent

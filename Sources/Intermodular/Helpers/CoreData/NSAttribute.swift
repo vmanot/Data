@@ -70,49 +70,58 @@ extension NSAttribute where Value: NSAttributeCoder {
 
 // MARK: - Auxiliary Implementation -
 
-@usableFromInline
-struct _CodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
-    @usableFromInline
-    let value: T
+public struct _CodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
+    public let value: T
     
-    @usableFromInline
-    init(_ value: T) {
+    @inlinable
+    public init(_ value: T) {
         self.value = value
     }
     
-    @usableFromInline
-    static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+    @inlinable
+    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         .init(try ObjectDecoder().decode(T.self, from: object.primitiveValue(forKey: key.stringValue).unwrap()))
     }
     
-    @usableFromInline
-    static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+    @inlinable
+    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         .init(try ObjectDecoder().decode(T.self, from: object.value(forKey: key.stringValue).unwrap()))
     }
     
-    @usableFromInline
-    func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+    @inlinable
+    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key, defaultValue: T) throws -> Self {
+        if let value = object.value(forKey: key.stringValue) {
+            return .init(try ObjectDecoder().decode(T.self, from: value))
+        } else {
+            return .init(defaultValue)
+        }
+    }
+    
+    @inlinable
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
         object.setPrimitiveValue(try ObjectEncoder().encode(value), forKey: key.stringValue)
     }
     
-    @usableFromInline
-    func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+    @inlinable
+    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
         object.setValue(try ObjectEncoder().encode(value), forKey: key.stringValue)
+    }
+    
+    public func getNSAttributeType() -> NSAttributeType {
+        .transformableAttributeType
     }
 }
 
-@usableFromInline
-struct _OptionalCodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
-    @usableFromInline
-    let value: T?
+public struct _OptionalCodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
+    public let value: T?
     
-    @usableFromInline
-    init(_ value: T?) {
+    @inlinable
+    public init(_ value: T?) {
         self.value = value
     }
     
-    @usableFromInline
-    static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+    @inlinable
+    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         guard let primitiveValue = object.primitiveValue(forKey: key.stringValue) else {
             return .init(nil)
         }
@@ -120,8 +129,8 @@ struct _OptionalCodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
         return .init(try ObjectDecoder().decode(T.self, from: primitiveValue))
     }
     
-    @usableFromInline
-    static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+    @inlinable
+    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         guard let value = object.value(forKey: key.stringValue) else {
             return .init(nil)
         }
@@ -129,8 +138,8 @@ struct _OptionalCodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
         return .init(try ObjectDecoder().decode(T.self, from: value))
     }
     
-    @usableFromInline
-    func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+    @inlinable
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
         guard let value = value else {
             return
         }
@@ -138,12 +147,16 @@ struct _OptionalCodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
         object.setPrimitiveValue(try ObjectEncoder().encode(value), forKey: key.stringValue)
     }
     
-    @usableFromInline
-    func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+    @inlinable
+    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
         guard let value = value else {
             return
         }
         
         object.setValue(try ObjectEncoder().encode(value), forKey: key.stringValue)
+    }
+    
+    public func getNSAttributeType() -> NSAttributeType {
+        .transformableAttributeType
     }
 }

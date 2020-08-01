@@ -5,7 +5,6 @@
 import Combine
 import Foundation
 import Swallow
-import Swift
 
 public final class JSONObjectDecoder: Initiable, TopLevelDecoder {
     public var userInfo: [CodingUserInfoKey: Any] = [:]

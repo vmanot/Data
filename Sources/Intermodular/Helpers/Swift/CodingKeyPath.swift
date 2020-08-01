@@ -5,7 +5,6 @@
 import Compute
 import Foundation
 import Swallow
-import Swift
 
 public struct CodingKeyPath: Hashable, ImplementationForwardingWrapper {
     public typealias Value = LinkedList<AnyCodingKey>

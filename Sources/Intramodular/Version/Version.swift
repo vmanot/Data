@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 public struct Version {
     fileprivate static let strictParser = VersionParser(strict: true)
@@ -143,6 +142,10 @@ extension Version {
 }
 
 // MARK: - Protocol Implementations -
+
+extension Version: Codable {
+    
+}
 
 extension Version: Comparable {
     public static func < (lhs: Version, rhs: Version) -> Bool {

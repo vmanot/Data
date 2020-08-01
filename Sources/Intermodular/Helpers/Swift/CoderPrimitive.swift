@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 public protocol CoderPrimitive: opaque_Hashable, Codable {
     func hash(into: inout Hasher)

@@ -4,29 +4,29 @@
 
 import Swallow
 
-public protocol NamespaceRepresentable: AnyProtocol {
-    init?(namespace: Namespace)
-    init?(namespaceSegment: NamespaceSegment)
+public protocol HierarchicalNamespaceRepresentable: AnyProtocol {
+    init?(namespace: HierarchicalNamespace)
+    init?(namespaceSegment: HierarchicalNamespace.Segment)
 
-    func toNamespace() -> Namespace
+    func toNamespace() -> HierarchicalNamespace
 }
 
-public protocol NamespaceSegmentRepresentable: NamespaceRepresentable {
-    init?(namespaceSegment: NamespaceSegment)
+public protocol NamespaceSegmentRepresentable: HierarchicalNamespaceRepresentable {
+    init?(namespaceSegment: HierarchicalNamespace.Segment)
 
-    func toNamespaceSegment() -> NamespaceSegment
+    func toNamespaceSegment() -> HierarchicalNamespace.Segment
 }
 
 // MARK: - Implementation -
 
-extension NamespaceRepresentable {
-    public init?(namespaceSegment: NamespaceSegment) {
-        self.init(namespace: Namespace(namespaceSegment))
+extension HierarchicalNamespaceRepresentable {
+    public init?(namespaceSegment: HierarchicalNamespace.Segment) {
+        self.init(namespace: .init(namespaceSegment))
     }
 }
 
 extension NamespaceSegmentRepresentable {
-    public init?(namespace: Namespace) {
+    public init?(namespace: HierarchicalNamespace) {
         guard let segment = namespace.singleSegment else {
             return nil
         }
@@ -34,7 +34,7 @@ extension NamespaceSegmentRepresentable {
         self.init(namespaceSegment: segment)
     }
 
-    public func toNamespace() -> Namespace {
+    public func toNamespace() -> HierarchicalNamespace {
         return .init(toNamespaceSegment())
     }
 }
@@ -42,7 +42,7 @@ extension NamespaceSegmentRepresentable {
 // MARK: - Concrete Implementations -
 
 extension AnyStringIdentifier: NamespaceSegmentRepresentable {
-    public init?(namespaceSegment: NamespaceSegment) {
+    public init?(namespaceSegment: HierarchicalNamespace.Segment) {
         guard case let .string(value) = namespaceSegment else {
             return nil
         }
@@ -50,7 +50,7 @@ extension AnyStringIdentifier: NamespaceSegmentRepresentable {
         self.init(value)
     }
 
-    public func toNamespaceSegment() -> NamespaceSegment {
+    public func toNamespaceSegment() -> HierarchicalNamespace.Segment {
         return .string(value)
     }
 }

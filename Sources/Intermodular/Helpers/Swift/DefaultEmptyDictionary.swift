@@ -25,4 +25,6 @@ public struct DefaultEmptyDictionary<Key: Codable & Hashable, Value: Codable>: C
     }
 }
 
-extension DefaultEmptyDictionary: Equatable where Key: Equatable, Value: Equatable { }
+extension DefaultEmptyDictionary: Equatable where Key: Equatable, Value: Equatable {
+    
+}

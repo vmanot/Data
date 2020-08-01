@@ -25,5 +25,10 @@ public struct DefaultEmptyArray<T: Codable>: Codable {
     }
 }
 
-extension DefaultEmptyArray: Equatable where T: Equatable { }
-extension DefaultEmptyArray: Hashable where T: Hashable { }
+extension DefaultEmptyArray: Equatable where T: Equatable {
+    
+}
+
+extension DefaultEmptyArray: Hashable where T: Hashable {
+    
+}

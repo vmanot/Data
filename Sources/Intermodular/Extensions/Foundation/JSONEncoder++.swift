@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 extension JSONEncoder {
     private struct FragmentEncodingBox<T: Encodable>: Encodable {

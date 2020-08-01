@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 // https://github.com/apple/swift/pull/11885
 public protocol ShouldNotBeDecodedFromBool: Decodable {

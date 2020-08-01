@@ -4,7 +4,6 @@
 
 import Foundation
 import Swallow
-import Swift
 
 public struct ObjectDecoder: Initiable {
     public init() {

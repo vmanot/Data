@@ -14,6 +14,8 @@ extension NSPersistentStoreCoordinator {
     public func destroyAll() throws {
         for store in persistentStores {
             try store.destroy()
+            
+            try remove(store)
         }
     }
 }

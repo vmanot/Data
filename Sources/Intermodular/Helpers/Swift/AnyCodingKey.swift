@@ -5,7 +5,6 @@
 import Compute
 import Foundation
 import Swallow
-import Swift
 
 public struct AnyCodingKey: CodingKey, Identifier {
     private enum Storage {

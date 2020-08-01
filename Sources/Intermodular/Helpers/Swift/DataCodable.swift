@@ -5,7 +5,6 @@
 import Foundation
 import Runtime
 import Swallow
-import Swift
 
 public protocol DataEncodable: AnyProtocol {
     associatedtype DataEncodingStrategy

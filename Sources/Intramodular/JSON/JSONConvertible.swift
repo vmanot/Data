@@ -6,111 +6,123 @@ import Foundation
 import Swallow
 
 protocol JSONConvertible {
-    func jsonValue() throws -> JSON
-}
-
-protocol JSONUnconditionalConvertible: JSONConvertible {
-    func jsonValue() -> JSON
+    func json() throws -> JSON
 }
 
 // MARK: - Concrete Implementations -
 
 extension Array: JSONConvertible {
-    func jsonValue() throws -> JSON {
-        return try .array(map({ try JSON(potentialJSONConvertible: $0) }))
+    @usableFromInline
+    func json() throws -> JSON {
+        return try .array(map({ try JSON(unknown: $0) }))
     }
 }
 
-extension Bool: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension Bool: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .bool(self)
     }
 }
 
 extension ContiguousArray: JSONConvertible {
-    func jsonValue() throws -> JSON {
-        return try .array(map({ try JSON(potentialJSONConvertible: $0) }))
+    @usableFromInline
+    func json() throws -> JSON {
+        return try .array(map({ try JSON(unknown: $0) }))
     }
 }
 
 extension Dictionary: JSONConvertible {
-    func jsonValue() throws -> JSON {
+    @usableFromInline
+    func json() throws -> JSON {
         return try .dictionary(
             .init(uniqueKeysWithValues: map {
-                (try cast($0.0) as String, try JSON(potentialJSONConvertible: $0.1))
+                (try cast($0.0) as String, try JSON(unknown: $0.1))
             })
         )
     }
 }
 
-extension Double: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension Double: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .number(.init(self))
     }
 }
 
-extension Float: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension Float: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .number(.init(Double(self)))
     }
 }
 
-extension Int: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension Int: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .number(.init(self))
     }
 }
 
-extension Int16: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension Int16: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .number(.init(self))
     }
 }
 
-extension Int32: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension Int32: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .number(.init(self))
     }
 }
 
-extension Int64: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension Int64: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .number(.init(self))
     }
 }
 
-extension JSON: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension JSON: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return self
     }
 }
 
 extension Set: JSONConvertible {
-    func jsonValue() throws -> JSON {
-        return try Array(self).jsonValue()
+    @usableFromInline
+    func json() throws -> JSON {
+        return try Array(self).json()
     }
 }
 
-extension String: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension String: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .string(self)
     }
 }
 
 extension NSArray: JSONConvertible {
-    func jsonValue() throws -> JSON {
-        return try (self as [AnyObject]).jsonValue()
+    @usableFromInline
+    func json() throws -> JSON {
+        return try (self as [AnyObject]).json()
     }
 }
 
 extension NSDictionary: JSONConvertible {
-    func jsonValue() throws -> JSON {
-        return try (self as Dictionary).jsonValue()
+    @usableFromInline
+    func json() throws -> JSON {
+        return try (self as Dictionary).json()
     }
 }
 
-extension NSNull: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
+extension NSNull: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
         return .null
     }
 }
@@ -119,7 +131,6 @@ import Runtime
 
 extension NSNumber: JSONConvertible {
     private func toSwiftNumber() throws -> Any {
-        TODO.whole(.fix)
         if let value = self as? Bool {
             return value
         } else if let value = self as? Double {
@@ -151,43 +162,50 @@ extension NSNumber: JSONConvertible {
         }
     }
 
-    func jsonValue() throws -> JSON {
-        return try JSON(potentialJSONConvertible: try toSwiftNumber())
+    @usableFromInline
+    func json() throws -> JSON {
+        return try JSON(unknown: try toSwiftNumber())
     }
 }
 
 extension NSSet: JSONConvertible {
-    func jsonValue() throws -> JSON {
-        return try (self as Set).jsonValue()
+    @usableFromInline
+    func json() throws -> JSON {
+        return try (self as Set).json()
     }
 }
 
-extension NSString: JSONUnconditionalConvertible {
-    func jsonValue() -> JSON {
-        return (self as String).jsonValue()
+extension NSString: JSONConvertible {
+    @usableFromInline
+    func json() -> JSON {
+        return (self as String).json()
     }
 }
 
 extension UInt: JSONConvertible {
-    func jsonValue() throws -> JSON {
+    @usableFromInline
+    func json() throws -> JSON {
         return .number(try JSONNumber(exactly: self).unwrap())
     }
 }
 
 extension UInt16: JSONConvertible {
-    func jsonValue() throws -> JSON {
+    @usableFromInline
+    func json() throws -> JSON {
         return .number(try JSONNumber(exactly: self).unwrap())
     }
 }
 
 extension UInt32: JSONConvertible {
-    func jsonValue() throws -> JSON {
+    @usableFromInline
+    func json() throws -> JSON {
         return .number(try JSONNumber(exactly: self).unwrap())
     }
 }
 
 extension UInt64: JSONConvertible {
-    func jsonValue() throws -> JSON {
+    @usableFromInline
+    func json() throws -> JSON {
         return .number(try JSONNumber(exactly: self).unwrap())
     }
 }
@@ -195,7 +213,8 @@ extension UInt64: JSONConvertible {
 // MARK: - Helpers -
 
 extension JSON {
-    init(potentialJSONConvertible value: Any) throws {
-        self = try (try cast(value) as JSONConvertible).jsonValue()
+    @usableFromInline
+    init(unknown value: Any) throws {
+        self = try (try cast(value) as JSONConvertible).json()
     }
 }
