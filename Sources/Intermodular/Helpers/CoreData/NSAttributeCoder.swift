@@ -72,6 +72,10 @@ extension RawRepresentable where RawValue: NSAttributeCoder, Self: NSAttributeCo
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
         try rawValue.encode(to: object, forKey: key)
     }
+    
+    public func getNSAttributeType() -> NSAttributeType {
+        rawValue.getNSAttributeType()
+    }
 }
 
 extension Wrapper where Value: NSAttributeCoder, Self: NSAttributeCoder {
@@ -89,5 +93,9 @@ extension Wrapper where Value: NSAttributeCoder, Self: NSAttributeCoder {
     
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
         try value.encode(to: object, forKey: key)
+    }
+    
+    public func getNSAttributeType() -> NSAttributeType {
+        value.getNSAttributeType()
     }
 }
