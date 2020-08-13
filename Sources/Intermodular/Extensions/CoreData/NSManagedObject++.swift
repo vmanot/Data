@@ -7,9 +7,9 @@ import Swallow
 
 extension NSObjectProtocol where Self: NSManagedObject {
     public func primitiveValueExists(forKey key: String) -> Bool {
-        return primitiveValue(forKey: key) != nil
+        primitiveValue(forKey: key) != nil
     }
-
+    
     public func willAccessValue<Value>(_ keyPath: KeyPath<Self, Value>) {
         willAccessValue(forKey: keyPath._kvcKeyPathString!)
     }

@@ -18,6 +18,24 @@ public protocol NSAttributeCoder {
 
 // MARK: - Implementation -
 
+extension NSAttributeCoder {
+    public static func decode<Key: CodingKey>(
+        from object: NSManagedObject,
+        forKey key: Key,
+        initialValue: Self?
+    ) throws -> Self {
+        if let initialValue = initialValue {
+            guard object.primitiveValueExists(forKey: key.stringValue) else {
+                return initialValue
+            }
+        }
+        
+        return try decode(from: object, forKey: key)
+    }
+}
+
+// MARK: - Conditional Conformance -
+
 extension Optional: NSAttributeCoder where Wrapped: NSAttributeCoder {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         if object.primitiveValue(forKey: key.stringValue) == nil {
