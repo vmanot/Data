@@ -26,6 +26,8 @@ extension NSAttributeCoder {
     ) throws -> Self {
         if let initialValue = initialValue {
             guard object.primitiveValueExists(forKey: key.stringValue) else {
+                try initialValue.encode(to: object, forKey: key)
+                
                 return initialValue
             }
         }

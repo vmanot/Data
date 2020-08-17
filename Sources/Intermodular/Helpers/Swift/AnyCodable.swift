@@ -6,7 +6,7 @@ import Foundation
 import Runtime
 import Swallow
 
-public enum AnyCodable: opaque_Hashable, Hashable {
+public enum AnyCodable: _opaque_Hashable, Hashable {
     case none
     case bool(Bool)
     case number(AnyNumber)
@@ -22,9 +22,9 @@ public enum AnyCodable: opaque_Hashable, Hashable {
         switch value {
             case let value as AnyCodableConvertible:
                 self = try value.toAnyCodable()
-            case let value as (opaque_Hashable & NSCoding):
+            case let value as (_opaque_Hashable & NSCoding):
                 self = .objectiveC(.init(base: value))
-            case let value as (opaque_Hashable & Encodable):
+            case let value as (_opaque_Hashable & Encodable):
                 self = .encodable(.init(value))
             default:
                 self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
@@ -229,9 +229,9 @@ public struct AnyEncodable: Encodable {
 }
 
 public struct AnyHashableEncodable: Encodable, Hashable {
-    public let value: opaque_Hashable & Encodable
+    public let value: _opaque_Hashable & Encodable
     
-    public init(_ value: opaque_Hashable & Encodable) {
+    public init(_ value: _opaque_Hashable & Encodable) {
         self.value = value
     }
     

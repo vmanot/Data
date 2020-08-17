@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-public protocol CoderPrimitive: opaque_Hashable, Codable {
+public protocol CoderPrimitive: _opaque_Hashable, Codable {
     func hash(into: inout Hasher)
 }
 
