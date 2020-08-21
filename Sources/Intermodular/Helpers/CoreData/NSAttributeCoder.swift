@@ -37,7 +37,7 @@ extension NSAttributeCoder {
 }
 
 // MARK: - Conditional Conformance -
-
+ 
 extension Optional: NSAttributeCoder where Wrapped: NSAttributeCoder {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         if object.primitiveValue(forKey: key.stringValue) == nil {
@@ -117,5 +117,29 @@ extension Wrapper where Value: NSAttributeCoder, Self: NSAttributeCoder {
     
     public func getNSAttributeType() -> NSAttributeType {
         value.getNSAttributeType()
+    }
+}
+
+// MARK: - Concrete Implementations -
+
+extension NSObject: NSAttributeCoder {
+    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+        try cast(object.primitiveValue(forKey: key.stringValue), to: Self.self)
+    }
+    
+    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
+        try cast(object.value(forKey: key.stringValue), to: Self.self)
+    }
+    
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        object.setPrimitiveValue(self, forKey: key.stringValue)
+    }
+    
+    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        object.setValue(self, forKey: key.stringValue)
+    }
+    
+    @objc public func getNSAttributeType() -> NSAttributeType {
+        .transformableAttributeType
     }
 }

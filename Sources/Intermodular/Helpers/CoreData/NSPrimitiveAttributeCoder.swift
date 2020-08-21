@@ -71,8 +71,8 @@ extension Character: NSPrimitiveAttributeCoder {
         .init(String.decode(from: object, forKey: key))
     }
     
-    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
-        stringValue.encodePrimitive(to: object, forKey: key)
+    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        try stringValue.encodePrimitive(to: object, forKey: key)
     }
     
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
@@ -128,25 +128,15 @@ extension Int64: NSPrimitiveAttributeCoder {
     }
 }
 
-extension NSNumber: NSAttributeCoder {
-    public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
-        try cast(object.primitiveValue(forKey: key.stringValue).unwrap(), to: Self.self)
-    }
-    
-    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
-        try cast(object.value(forKey: key.stringValue).unwrap(), to: Self.self)
-    }
-    
-    public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
-        object.setPrimitiveValue(self, forKey: key.stringValue)
-    }
-    
-    public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
-        object.setValue(self, forKey: key.stringValue)
-    }
-    
-    public func getNSAttributeType() -> NSAttributeType {
-        TODO.unimplemented
+extension NSNumber {
+    override public func getNSAttributeType() -> NSAttributeType {
+        if let value = downcast() as? NSPrimitiveAttributeCoder {
+            return value.getNSAttributeType()
+        } else {
+            assertionFailure()
+            
+            return .decimalAttributeType
+        }
     }
 }
 
