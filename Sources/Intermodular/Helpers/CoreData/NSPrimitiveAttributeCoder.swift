@@ -30,10 +30,18 @@ extension NSPrimitiveAttributeCoder {
     }
     
     public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
+        guard object.managedObjectContext != nil else {
+            return
+        }
+        
         return object.setPrimitiveValue(self, forKey: key.stringValue)
     }
     
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
+        guard object.managedObjectContext != nil else {
+            return
+        }
+
         let key = key.stringValue
         
         object.willChangeValue(forKey: key)

@@ -89,11 +89,19 @@ public struct _CodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
     
     @inlinable
     public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        guard object.managedObjectContext != nil else {
+            return
+        }
+        
         object.setPrimitiveValue(try ObjectEncoder().encode(value), forKey: key.stringValue)
     }
     
     @inlinable
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        guard object.managedObjectContext != nil else {
+            return
+        }
+        
         object.setValue(try ObjectEncoder().encode(value), forKey: key.stringValue)
     }
     
@@ -130,6 +138,10 @@ public struct _OptionalCodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
     
     @inlinable
     public func encodePrimitive<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        guard object.managedObjectContext != nil else {
+            return
+        }
+        
         guard let value = value else {
             return
         }
@@ -139,6 +151,10 @@ public struct _OptionalCodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
     
     @inlinable
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) throws {
+        guard object.managedObjectContext != nil else {
+            return
+        }
+        
         guard let value = value else {
             return
         }
