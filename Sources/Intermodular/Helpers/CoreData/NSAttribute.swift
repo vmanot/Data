@@ -12,10 +12,9 @@ public struct NSAttribute<Value> {
     public var wrappedValue: Value
     
     @usableFromInline
-    let encodeImpl: (Value, NSManagedObject) throws -> Void
-    
-    @usableFromInline
     let decodeImpl: (NSManagedObject) throws -> Value
+    @usableFromInline
+    let encodeImpl: (Value, NSManagedObject) throws -> Void
     
     @inlinable
     public static subscript<EnclosingSelf: NSManagedObject>(
@@ -38,8 +37,8 @@ extension NSAttribute where Value: Codable {
         self.key = .init(stringValue: key)
         self.wrappedValue = defaultValue
         
+        self.decodeImpl = { try _CodableToNSAttributeCoder<Value>.decode(from: $0, forKey: AnyStringKey(stringValue: key), defaultValue: .init(defaultValue)).value }
         self.encodeImpl = { try _CodableToNSAttributeCoder($0).encode(to: $1, forKey: AnyStringKey(stringValue: key)) }
-        self.decodeImpl = { try _CodableToNSAttributeCoder<Value>.decode(from: $0, forKey: AnyStringKey(stringValue: key)).value }
     }
     
     @inlinable
@@ -47,8 +46,8 @@ extension NSAttribute where Value: Codable {
         self.key = .init(stringValue: key)
         self.wrappedValue = defaultValue
         
+        self.decodeImpl = { try _OptionalCodableToNSAttributeCoder<T>.decode(from: $0, forKey: AnyStringKey(stringValue: key), defaultValue: .init(defaultValue)).value }
         self.encodeImpl = { try _OptionalCodableToNSAttributeCoder($0).encode(to: $1, forKey: AnyStringKey(stringValue: key)) }
-        self.decodeImpl = { try _OptionalCodableToNSAttributeCoder<T>.decode(from: $0, forKey: AnyStringKey(stringValue: key)).value }
     }
 }
 
@@ -58,8 +57,8 @@ extension NSAttribute where Value: NSAttributeCoder {
         self.key = .init(stringValue: key)
         self.wrappedValue = defaultValue
         
+        self.decodeImpl = { try Value.decode(from: $0, forKey: AnyStringKey(stringValue: key), defaultValue: defaultValue) }
         self.encodeImpl = { try $0.encode(to: $1, forKey: AnyStringKey(stringValue: key)) }
-        self.decodeImpl = { try Value.decode(from: $0, forKey: AnyStringKey(stringValue: key)) }
     }
     
     @inlinable
@@ -86,15 +85,6 @@ public struct _CodableToNSAttributeCoder<T: Codable>: NSAttributeCoder {
     @inlinable
     public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         .init(try ObjectDecoder().decode(T.self, from: object.value(forKey: key.stringValue).unwrap()))
-    }
-    
-    @inlinable
-    public static func decode<Key: CodingKey>(from object: NSManagedObject, forKey key: Key, defaultValue: T) throws -> Self {
-        if let value = object.value(forKey: key.stringValue) {
-            return .init(try ObjectDecoder().decode(T.self, from: value))
-        } else {
-            return .init(defaultValue)
-        }
     }
     
     @inlinable

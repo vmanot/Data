@@ -19,17 +19,33 @@ public protocol NSAttributeCoder {
 // MARK: - Implementation -
 
 extension NSAttributeCoder {
+    public static func decodePrimitive<Key: CodingKey>(
+        from object: NSManagedObject,
+        forKey key: Key,
+        defaultValue: @autoclosure() -> Self
+    ) throws -> Self {
+        guard object.primitiveValueExists(forKey: key.stringValue) else {
+            let defaultValue = defaultValue()
+            
+            try defaultValue.encodePrimitive(to: object, forKey: key)
+            
+            return defaultValue
+        }
+
+        return try decodePrimitive(from: object, forKey: key)
+    }
+    
     public static func decode<Key: CodingKey>(
         from object: NSManagedObject,
         forKey key: Key,
-        initialValue: Self?
+        defaultValue: @autoclosure() -> Self
     ) throws -> Self {
-        if let initialValue = initialValue {
-            guard object.primitiveValueExists(forKey: key.stringValue) else {
-                try initialValue.encode(to: object, forKey: key)
-                
-                return initialValue
-            }
+        guard object.primitiveValueExists(forKey: key.stringValue) else {
+            let defaultValue = defaultValue()
+            
+            try defaultValue.encode(to: object, forKey: key)
+            
+            return defaultValue
         }
         
         return try decode(from: object, forKey: key)
