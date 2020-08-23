@@ -58,6 +58,14 @@ extension NSPrimitiveAttributeCoder {
     }
 }
 
+// MARK: - Conditional Conformances -
+
+extension Optional: NSPrimitiveAttributeCoder where Wrapped: NSPrimitiveAttributeCoder {
+    public static func toNSAttributeType() -> NSAttributeType {
+        Wrapped.toNSAttributeType()
+    }
+}
+
 // MARK: - Concrete Implementations -
 
 extension Bool: NSPrimitiveAttributeCoder {
@@ -85,6 +93,12 @@ extension Character: NSPrimitiveAttributeCoder {
     
     public func encode<Key: CodingKey>(to object: NSManagedObject, forKey key: Key) {
         stringValue.encode(to: object, forKey: key)
+    }
+}
+
+extension Date: NSPrimitiveAttributeCoder {
+    public static func toNSAttributeType() -> NSAttributeType {
+        .dateAttributeType
     }
 }
 
@@ -145,12 +159,6 @@ extension NSNumber {
             
             return .decimalAttributeType
         }
-    }
-}
-
-extension Optional: NSPrimitiveAttributeCoder where Wrapped: NSPrimitiveAttributeCoder {
-    public static func toNSAttributeType() -> NSAttributeType {
-        Wrapped.toNSAttributeType()
     }
 }
 

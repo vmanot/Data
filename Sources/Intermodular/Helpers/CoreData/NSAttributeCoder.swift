@@ -31,7 +31,7 @@ extension NSAttributeCoder {
             
             return defaultValue
         }
-
+        
         return try decodePrimitive(from: object, forKey: key)
     }
     
@@ -53,7 +53,7 @@ extension NSAttributeCoder {
 }
 
 // MARK: - Conditional Conformance -
- 
+
 extension Optional: NSAttributeCoder where Wrapped: NSAttributeCoder {
     public static func decodePrimitive<Key: CodingKey>(from object: NSManagedObject, forKey key: Key) throws -> Self {
         if object.primitiveValue(forKey: key.stringValue) == nil {
@@ -83,7 +83,7 @@ extension Optional: NSAttributeCoder where Wrapped: NSAttributeCoder {
         if let value = self {
             try value.encode(to: object, forKey: key)
         } else {
-            object.setValue (nil, forKey: key.stringValue)
+            object.setValue(nil, forKey: key.stringValue)
         }
     }
     
