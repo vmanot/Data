@@ -9,10 +9,10 @@ extension CSVDecoder._Decoder {
     final class SingleValueContainer {
         let codingPath: [CodingKey]
         
-        private let headers: [CSVHeader]
+        private let headers: [CSVColumnHeader]
         private let rows: [String]
         
-        required init(headers: [CSVHeader], rows: [String], codingPath: [CodingKey])
+        required init(headers: [CSVColumnHeader], rows: [String], codingPath: [CodingKey])
         {
             self.headers = headers
             self.rows = rows

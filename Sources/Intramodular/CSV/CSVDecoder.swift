@@ -14,10 +14,10 @@ public final class CSVDecoder: TopLevelDecoder {
         public var codingPath = [CodingKey]()
         public var userInfo = [CodingUserInfoKey : Any]()
         
-        private let headers: [CSVHeader]
+        private let headers: [CSVColumnHeader]
         private let rows: [String]
         
-        required init(headers: [CSVHeader], rows: [String]) {
+        required init(headers: [CSVColumnHeader], rows: [String]) {
             self.headers = headers
             self.rows = rows
         }
@@ -49,7 +49,7 @@ public final class CSVDecoder: TopLevelDecoder {
             .removeFirst()
             .split(separator: ",")
             .enumerated()
-            .map({ CSVHeader(index: $0, name: String($1)) })
+            .map({ CSVColumnHeader(index: $0, name: String($1)) })
         
         return try T(from: _Decoder(headers: .init(headers), rows: rows.map(String.init)))
     }

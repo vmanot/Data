@@ -21,16 +21,18 @@ public final class JSONObjectDecoder: Initiable, TopLevelDecoder {
             
             return try decoder.decode(type, from: topLevel, userInfo: userInfo)
         } catch {
-            throw _dataCorrupted(at: [], "The given data was not valid JSON.", error)
+            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "The given data was not valid JSON.", underlyingError: error))
         }
     }
     
     public var decodingStrategies: ObjectDecoder.DecodingStrategies = {
         var strategies = ObjectDecoder.DecodingStrategies()
+        
         strategies[Decimal.self] = .compatibleWithJSONDecoder
         strategies[Double.self] = .deferredToDouble
         strategies[Float.self] = .deferredToFloat
         strategies[URL.self] = .compatibleWithJSONDecoder
+        
         return strategies
     }()
     

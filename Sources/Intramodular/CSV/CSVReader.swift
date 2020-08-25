@@ -14,10 +14,10 @@ internal let DQUOTE2_STR: String = "\"\""
 
 /// No overview available.
 public class CSVReader {
-
+    
     /// No overview available.
     public struct Configuration {
-
+        
         /// `true` if the CSV has a header row, otherwise `false`. Default: `false`.
         public var hasHeaderRow: Bool
         /// No overview available.
@@ -26,45 +26,45 @@ public class CSVReader {
         public var delimiter: UnicodeScalar
         /// No overview available.
         public var whitespaces: CharacterSet
-
+        
         /// No overview available.
         internal init(
             hasHeaderRow: Bool,
             trimFields: Bool,
             delimiter: UnicodeScalar,
             whitespaces: CharacterSet) {
-
+            
             self.hasHeaderRow = hasHeaderRow
             self.trimFields = trimFields
             self.delimiter = delimiter
-
+            
             var whitespaces = whitespaces
             _ = whitespaces.remove(delimiter)
             self.whitespaces = whitespaces
         }
-
+        
     }
-
+    
     fileprivate var iterator: AnyIterator<UnicodeScalar>
     public let configuration: Configuration
     public fileprivate (set) var error: Error?
-
+    
     fileprivate var back: UnicodeScalar?
-
+    
     /// CSV header row. To set a value for this property,
     /// you set `true` to `headerRow` in initializer.
     public private (set) var headerRow: [String]?
-
+    
     public fileprivate (set) var currentRow: [String]?
-
+    
     internal init<T: IteratorProtocol>(
         iterator: T,
         configuration: Configuration
-        ) throws where T.Element == UnicodeScalar {
-
+    ) throws where T.Element == UnicodeScalar {
+        
         self.iterator = AnyIterator(iterator)
         self.configuration = configuration
-
+        
         if configuration.hasHeaderRow {
             guard let headerRow = readRow() else {
                 throw CSV.Error.cannotReadHeaderRow
@@ -73,16 +73,16 @@ public class CSVReader {
             self.currentRow = nil
         }
     }
-
+    
 }
 
 extension CSVReader {
-
+    
     public static let defaultHasHeaderRow: Bool = false
     public static let defaultTrimFields: Bool = false
     public static let defaultDelimiter: UnicodeScalar = ","
     public static let defaultWhitespaces: CharacterSet = .whitespaces
-
+    
     /// Create an instance with `InputStream`.
     ///
     /// - parameter stream: An `InputStream` object. If the stream is not open,
@@ -97,8 +97,8 @@ extension CSVReader {
         trimFields: Bool = defaultTrimFields,
         delimiter: UnicodeScalar = defaultDelimiter,
         whitespaces: CharacterSet = defaultWhitespaces
-        ) throws where T.CodeUnit == UInt8 {
-
+    ) throws where T.CodeUnit == UInt8 {
+        
         let reader = try BinaryReader(stream: stream, endian: .unknown, closeOnDeinit: true)
         let input = reader.makeUInt8Iterator()
         let iterator = UnicodeIterator(input: input, inputEncodingType: codecType)
@@ -110,7 +110,7 @@ extension CSVReader {
         input.errorHandler = { [unowned self] in self.errorHandler(error: $0) }
         iterator.errorHandler = { [unowned self] in self.errorHandler(error: $0) }
     }
-
+    
     /// Create an instance with `InputStream`.
     ///
     /// - parameter stream: An `InputStream` object. If the stream is not open,
@@ -127,8 +127,8 @@ extension CSVReader {
         trimFields: Bool = defaultTrimFields,
         delimiter: UnicodeScalar = defaultDelimiter,
         whitespaces: CharacterSet = defaultWhitespaces
-        ) throws where T.CodeUnit == UInt16 {
-
+    ) throws where T.CodeUnit == UInt16 {
+        
         let reader = try BinaryReader(stream: stream, endian: endian, closeOnDeinit: true)
         let input = reader.makeUInt16Iterator()
         let iterator = UnicodeIterator(input: input, inputEncodingType: codecType)
@@ -140,7 +140,7 @@ extension CSVReader {
         input.errorHandler = { [unowned self] in self.errorHandler(error: $0) }
         iterator.errorHandler = { [unowned self] in self.errorHandler(error: $0) }
     }
-
+    
     /// Create an instance with `InputStream`.
     ///
     /// - parameter stream: An `InputStream` object. If the stream is not open,
@@ -157,8 +157,8 @@ extension CSVReader {
         trimFields: Bool = defaultTrimFields,
         delimiter: UnicodeScalar = defaultDelimiter,
         whitespaces: CharacterSet = defaultWhitespaces
-        ) throws where T.CodeUnit == UInt32 {
-
+    ) throws where T.CodeUnit == UInt32 {
+        
         let reader = try BinaryReader(stream: stream, endian: endian, closeOnDeinit: true)
         let input = reader.makeUInt32Iterator()
         let iterator = UnicodeIterator(input: input, inputEncodingType: codecType)
@@ -170,7 +170,7 @@ extension CSVReader {
         input.errorHandler = { [unowned self] in self.errorHandler(error: $0) }
         iterator.errorHandler = { [unowned self] in self.errorHandler(error: $0) }
     }
-
+    
     /// Create an instance with `InputStream`.
     ///
     /// - parameter stream: An `InputStream` object. If the stream is not open,
@@ -183,8 +183,8 @@ extension CSVReader {
         trimFields: Bool = defaultTrimFields,
         delimiter: UnicodeScalar = defaultDelimiter,
         whitespaces: CharacterSet = defaultWhitespaces
-        ) throws {
-
+    ) throws {
+        
         try self.init(
             stream: stream,
             codecType: UTF8.self,
@@ -193,7 +193,7 @@ extension CSVReader {
             delimiter: delimiter,
             whitespaces: whitespaces)
     }
-
+    
     /// Create an instance with CSV string.
     ///
     /// - parameter string: An CSV string.
@@ -205,8 +205,8 @@ extension CSVReader {
         trimFields: Bool = defaultTrimFields,
         delimiter: UnicodeScalar = defaultDelimiter,
         whitespaces: CharacterSet = defaultWhitespaces
-        ) throws {
-
+    ) throws {
+        
         let iterator = string.unicodeScalars.makeIterator()
         let config = Configuration(hasHeaderRow: hasHeaderRow,
                                    trimFields: trimFields,
@@ -214,25 +214,25 @@ extension CSVReader {
                                    whitespaces: whitespaces)
         try self.init(iterator: iterator, configuration: config)
     }
-
+    
     private func errorHandler(error: Error) {
         //configuration.fileInputErrorHandler?(error, currentRowIndex, currentFieldIndex)
         self.error = error
     }
-
+    
 }
 
 // MARK: - Parse CSV
 
 extension CSVReader {
-
+    
     fileprivate func readRow() -> [String]? {
         var c = moveNext()
         if c == nil {
             currentRow = nil
             return nil
         }
-
+        
         var row = [String]()
         var field: String
         var end: Bool
@@ -243,7 +243,7 @@ extension CSVReader {
                     c = moveNext()
                 }
             }
-
+            
             if c == nil {
                 (field, end) = ("", true)
             } else if c == DQUOTE {
@@ -251,7 +251,7 @@ extension CSVReader {
             } else {
                 back = c
                 (field, end) = readField(quoted: false)
-
+                
                 if configuration.trimFields {
                     // Trim the trailing spaces
                     field = field.trimmingCharacters(in: configuration.whitespaces)
@@ -261,29 +261,29 @@ extension CSVReader {
             if end {
                 break
             }
-
+            
             c = moveNext()
         }
-
+        
         currentRow = row
         return row
     }
-
+    
     private func readField(quoted: Bool) -> (String, Bool) {
         var fieldBuffer = String.UnicodeScalarView()
-
+        
         while let c = moveNext() {
             if quoted {
                 if c == DQUOTE {
                     var cNext = moveNext()
-
+                    
                     if configuration.trimFields {
                         // Trim the trailing spaces
                         while cNext != nil && configuration.whitespaces.contains(cNext!) {
                             cNext = moveNext()
                         }
                     }
-
+                    
                     if cNext == nil || cNext == CR || cNext == LF {
                         if cNext == CR {
                             let cNextNext = moveNext()
@@ -324,11 +324,11 @@ extension CSVReader {
                 }
             }
         }
-
+        
         // END FILE
         return (String(fieldBuffer), true)
     }
-
+    
     private func moveNext() -> UnicodeScalar? {
         if back != nil {
             defer {

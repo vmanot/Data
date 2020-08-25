@@ -4,9 +4,12 @@
 
 import Compute
 import Swallow
+import Swift
 
 public struct CSV: AnyProtocol {
-    private var data: [CSVHeader: [Int: String]] = [:]
+    public private(set) var header: [CSVColumnHeader] = []
+    
+    private var data: [CSVColumnHeader: [String]] = [:]
     
     public init() {
         
@@ -16,49 +19,86 @@ public struct CSV: AnyProtocol {
         data.keys.contains(where: { $0.name != nil })
     }
     
-    public var headers: [CSVHeader] {
-        data.keys.sorted()
-    }
-    
-    public var maxIndex: Int? {
-        headers.last?.index
-    }
-    
     public var numberOfRows: Int {
-        (data.values.compactMap({ $0.keys.max() }).first ?? 0) + 1
+        data.values.compactMap({ $0.count }).first ?? 0
     }
 }
 
 extension CSV {
-    public func header(at index: Int) -> CSVHeader {
-        data.keys.first(where: { $0.index == index }) ?? CSVHeader(index: index)
+    public func header(at index: Int) -> CSVColumnHeader {
+        header[try: index] ?? CSVColumnHeader(index: index)
     }
     
-    public subscript(_ headerName: String) -> [Int: String]? {
+    public subscript(_ header: CSVColumnHeader) -> [String] {
         get {
-            data[headers.first(where: { $0.name == headerName })]
+            data[header]!
         } set {
-            data[headers.first(where: { $0.name == headerName })] = newValue
+            data[header] = newValue
         }
     }
     
-    public mutating func incrementIndices(by x: Int?) {
-        guard let x = x else {
-            return
+    public subscript(_ headerName: String) -> [String] {
+        get {
+            self[header.first(where: { $0.name == headerName })!]
+        } set {
+            self[header.first(where: { $0.name == headerName })!] = newValue
         }
-        
+    }
+    
+    public mutating func incrementIndices(by x: Int) {
         data.forEach(mutating: { element in
-            element.key.incrementIndex(by: x)
+            element.key.index += x
         })
     }
     
     public mutating func append(_ other: CSV) {
         data.merge(
-            other.then({ $0.incrementIndices(by: maxIndex) }).data,
+            other.then({ $0.incrementIndices(by: header.count) }).data,
             uniquingKeysWith: { _, _ in fatalError() }
         )
     }
 }
+
+extension CSV {
+    @discardableResult
+    public mutating func appendColumn(named headerName: String? = nil) -> CSVColumnHeader {
+        let columnHeader = CSVColumnHeader(index: header.indices.last.map({ $0 + 1 }) ?? 0, name: headerName)
+        
+        self.header += columnHeader
+        
+        data[columnHeader] = Array(repeating: String(), count: numberOfRows)
+        
+        return columnHeader
+    }
+}
+
+extension CSV {
+    public func filter(_ isIncluded: ([CSVColumnHeader: String]) throws -> Bool) rethrows -> Self {
+        var rowIndices = Set<Int>()
+        
+        let allRowIndices = 0..<numberOfRows
+        
+        for rowIndex in allRowIndices {
+            var row: [CSVColumnHeader: String] = [:]
+            
+            for columnHeader in header {
+                row[columnHeader] = self[columnHeader][rowIndex]
+            }
+            
+            if try isIncluded(row) {
+                rowIndices.insert(rowIndex)
+            }
+        }
+        
+        return then {
+            for header in data.keys {
+                $0.data[header]!.remove(at: Set(allRowIndices).subtracting(rowIndices).sorted(by: { $1 > $0 }))
+            }
+        }
+    }
+}
+
+// MARK: - Input & Output -
 
 extension CSV {
     public mutating func read(from reader: CSVReader) {
@@ -66,22 +106,19 @@ extension CSV {
             return
         }
         
-        var indexedHeaders: [Int: CSVHeader] = [:]
-        
         if let headerRow = reader.headerRow {
             for (index, name) in headerRow.enumerated() {
-                let header = CSVHeader(index: index, name: name)
-                indexedHeaders[index] = header
+                header.append(CSVColumnHeader(index: index, name: name))
             }
         } else {
             for index in first.indices {
-                indexedHeaders[index] = CSVHeader(index: 1)
+                header.append(CSVColumnHeader(index: index))
             }
         }
         
-        for (rowIndex, row) in [first].join(reader.makeSequence()).enumerated() {
+        for row in [first].join(reader.makeSequence()) {
             for (columnIndex, cellValue) in row.enumerated() {
-                data[header(at: columnIndex), default: [:]][rowIndex] = cellValue
+                data[header(at: columnIndex), default: []].append(cellValue)
             }
         }
     }
@@ -89,11 +126,11 @@ extension CSV {
     public mutating func write(to writer: CSVWriter) throws {
         if hasHeaderRow {
             writer.beginNewRow()
-            try writer.write(row: headers.map({ $0.name ?? "" }))
+            try writer.write(row: header.map({ $0.name ?? "" }))
         }
         
         for rowIndex in 0..<numberOfRows {
-            try writer.write(row: headers.map({ data[$0]?[rowIndex] ?? "" }))
+            try writer.write(row: header.map({ data[$0]?[rowIndex] ?? "" }))
         }
     }
 }

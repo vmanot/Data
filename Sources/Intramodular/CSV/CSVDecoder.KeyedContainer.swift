@@ -9,10 +9,10 @@ extension CSVDecoder._Decoder {
     final class KeyedContainer<Key: CodingKey>  {
         let codingPath: [CodingKey]
         
-        private let headers: [CSVHeader]
+        private let headers: [CSVColumnHeader]
         private let values: [String]
         
-        required init(headers: [CSVHeader], row: String, codingPath: [CodingKey]) {
+        required init(headers: [CSVColumnHeader], row: String, codingPath: [CodingKey]) {
             self.headers = headers
             self.codingPath = codingPath
             self.values = row.split(separator: ",").map({ (substring) -> String in

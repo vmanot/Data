@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct CSVHeader: Codable {
+public struct CSVColumnHeader: Codable {
     public var index: Int
     public var name: String?
     
@@ -14,32 +14,22 @@ public struct CSVHeader: Codable {
     }
 }
 
-extension CSVHeader {
-    public mutating func incrementIndex(by x: Int?) {
-        index += x ?? 0
-    }
-}
-
 // MARK: - Protocol Implementations -
 
-extension CSVHeader: Comparable {
+extension CSVColumnHeader: Comparable {
     public static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.index <= rhs.index
     }
 }
 
-extension CSVHeader: Equatable {
+extension CSVColumnHeader: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.index == rhs.index
     }
 }
 
-extension CSVHeader: Hashable {
+extension CSVColumnHeader: Hashable {
     public func hash(into hasher: inout Hasher) {
-        if let name = name {
-            hasher.combine(name)
-        } else {
-            hasher.combine(index)
-        }
+        hasher.combine(index)
     }
 }

@@ -10,10 +10,10 @@ extension CSVDecoder._Decoder {
         var currentIndex = 0
         let codingPath: [CodingKey]
         
-        private let headers: [CSVHeader]
+        private let headers: [CSVColumnHeader]
         private let rows: [String]
         
-        required init(headers: [CSVHeader], rows: [String], codingPath: [CodingKey])  {
+        required init(headers: [CSVColumnHeader], rows: [String], codingPath: [CodingKey])  {
             self.headers = headers
             self.rows = rows
             self.codingPath = codingPath
