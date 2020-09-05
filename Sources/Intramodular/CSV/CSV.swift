@@ -7,26 +7,26 @@ import Swallow
 import Swift
 
 public struct CSV: AnyProtocol {
-    public private(set) var header: [CSVColumnHeader] = []
-    
+    public private(set) var header: [CSVColumnHeader] = [] {
+        didSet {
+            for column in header {
+                if let name = column.name {
+                    nameToColumnMap[name] = column
+                }
+            }
+        }
+    }
+    private var nameToColumnMap: [String: CSVColumnHeader] = [:]
     private var data: [CSVColumnHeader: [String]] = [:]
     
     public init() {
         
     }
-    
-    public var hasHeaderRow: Bool {
-        data.keys.contains(where: { $0.name != nil })
-    }
-    
-    public var numberOfRows: Int {
-        data.values.compactMap({ $0.count }).first ?? 0
-    }
 }
 
 extension CSV {
-    public func header(at index: Int) -> CSVColumnHeader {
-        header[try: index] ?? CSVColumnHeader(index: index)
+    public var hasHeaderRow: Bool {
+        data.keys.contains(where: { $0.name != nil })
     }
     
     public subscript(_ header: CSVColumnHeader) -> [String] {
@@ -37,38 +37,20 @@ extension CSV {
         }
     }
     
-    public subscript(_ headerName: String) -> [String] {
+    public subscript(column name: String) -> [String] {
         get {
-            self[header.first(where: { $0.name == headerName })!]
+            self[columnHeader(named: name)]
         } set {
-            self[header.first(where: { $0.name == headerName })!] = newValue
+            self[columnHeader(named: name)] = newValue
         }
     }
     
-    public mutating func incrementIndices(by x: Int) {
-        data.forEach(mutating: { element in
-            element.key.index += x
-        })
+    private func columnHeader(at index: Int) -> CSVColumnHeader {
+        header[try: index] ?? CSVColumnHeader(index: index)
     }
     
-    public mutating func append(_ other: CSV) {
-        data.merge(
-            other.then({ $0.incrementIndices(by: header.count) }).data,
-            uniquingKeysWith: { _, _ in fatalError() }
-        )
-    }
-}
-
-extension CSV {
-    @discardableResult
-    public mutating func appendColumn(named headerName: String? = nil) -> CSVColumnHeader {
-        let columnHeader = CSVColumnHeader(index: header.indices.last.map({ $0 + 1 }) ?? 0, name: headerName)
-        
-        self.header += columnHeader
-        
-        data[columnHeader] = Array(repeating: String(), count: numberOfRows)
-        
-        return columnHeader
+    private func columnHeader(named name: String) -> CSVColumnHeader {
+        nameToColumnMap[name] ?? header.first(where: { $0.name == name })!
     }
 }
 
@@ -76,7 +58,7 @@ extension CSV {
     public func filter(_ isIncluded: ([CSVColumnHeader: String]) throws -> Bool) rethrows -> Self {
         var rowIndices = Set<Int>()
         
-        let allRowIndices = 0..<numberOfRows
+        let allRowIndices = 0..<rowCount
         
         for rowIndex in allRowIndices {
             var row: [CSVColumnHeader: String] = [:]
@@ -95,6 +77,131 @@ extension CSV {
                 $0.data[header]!.remove(at: Set(allRowIndices).subtracting(rowIndices).sorted(by: { $1 > $0 }))
             }
         }
+    }
+    
+    public func filter(byColumn columnName: String, isIncluded: (String) throws -> Bool) rethrows -> Self {
+        try filter({ try isIncluded($0[columnHeader(named: columnName)]!) })
+    }
+}
+
+extension CSV {
+    public mutating func appendRow(_ row: [String]) {
+        for (columnIndex, column) in header.enumerated() {
+            data[column]!.append(row[columnIndex])
+        }
+    }
+    
+    @discardableResult
+    public mutating func appendColumn(named headerName: String? = nil) -> CSVColumnHeader {
+        let columnHeader = CSVColumnHeader(index: header.indices.last.map({ $0 + 1 }) ?? 0, name: headerName)
+        
+        self.header += columnHeader
+        
+        data[columnHeader] = Array(repeating: String(), count: rowCount)
+        
+        return columnHeader
+    }
+    
+    public mutating func append(_ other: CSV) {
+        data.merge(
+            other.then({ $0.incrementIndices(by: header.count) }).data,
+            uniquingKeysWith: { _, _ in fatalError() }
+        )
+    }
+    
+    private mutating func incrementIndices(by x: Int) {
+        data.forEach(mutating: { element in
+            element.key.index += x
+        })
+    }
+}
+
+// MARK: - Protocol Implementations -
+
+extension CSV: Collection {
+    public var isEmpty: Bool {
+        data.isEmpty
+    }
+    
+    public var startIndex: Int {
+        header.startIndex
+    }
+    
+    public var endIndex: Int {
+        header.endIndex
+    }
+    
+    public func index(after i: Int) -> Int {
+        i + 1
+    }
+    
+    public subscript(position: Int) -> [String] {
+        data[columnHeader(at: position)]!
+    }
+}
+
+extension CSV: RowMajorRectangularCollection {
+    public typealias Rows = LazyMapSequence<LazySequence<(Range<Int>)>.Elements, [String]>
+    public typealias Columns = LazyMapSequence<LazySequence<Range<Array<CSVColumnHeader>.Index>>.Elements, [String]>
+    public typealias RectangularIterator = AnyIterator<String>
+    
+    public var rows: Rows {
+        (0..<rowCount).lazy.map({ self[row: $0] })
+    }
+    
+    public var rowCount: Int {
+        data.values.compactMap({ $0.count }).first ?? 0
+    }
+    
+    public var columns: Columns {
+        header.indices.lazy.map({ self[column: $0] })
+    }
+    
+    public var columnCount: Int {
+        header.count
+    }
+    
+    public subscript(row rowIndex: Int) -> [String] {
+        get {
+            header.map({ data[$0]![rowIndex] })
+        } set {
+            /// A boolean indicating whether the rows should be appended (if `rowIndex` is out of bounds by `1`).
+            let shouldAppend = rowIndex == rowCount
+            
+            if shouldAppend {
+                appendRow(newValue)
+            } else {
+                for (columnIndex, column) in header.enumerated() {
+                    data[column]![rowIndex] = newValue[columnIndex]
+                }
+            }
+        }
+    }
+    
+    public subscript(column columnIndex: Int) -> [String] {
+        get {
+            self[columnHeader(at: columnIndex)]
+        } set {
+            self[columnHeader(at: columnIndex)] = newValue
+        }
+    }
+    
+    public func makeRectangularIterator() -> AnyIterator<String> {
+        .init(rows.lazy.flatMap({ $0 }).makeIterator())
+    }
+    
+    public subscript(rectangular position: Int) -> String {
+        self[row: rowIndex(from: position), column: columnIndex(from: position)]
+    }
+    
+    public func index(forRow rowIndex: Int, column columnIndex: Int) -> Int {
+        rowIndex * columnIndex
+    }
+}
+
+extension CSV: Sequence {
+    public func makeIterator() -> AnyIterator<[String]> {
+        .init(rows.makeIterator())
     }
 }
 
@@ -118,19 +225,35 @@ extension CSV {
         
         for row in [first].join(reader.makeSequence()) {
             for (columnIndex, cellValue) in row.enumerated() {
-                data[header(at: columnIndex), default: []].append(cellValue)
+                data[columnHeader(at: columnIndex), default: []].append(cellValue)
             }
         }
     }
     
-    public mutating func write(to writer: CSVWriter) throws {
+    public mutating func read(
+        from url: URL,
+        encoding: String.Encoding = .utf8,
+        hasHeaderRow: Bool = true
+    ) throws {
+        let reader = try CSVReader(string: String(contentsOf: url, encoding: encoding), hasHeaderRow: hasHeaderRow)
+        
+        read(from: reader)
+    }
+    
+    public func write(to writer: CSVWriter) throws {
         if hasHeaderRow {
             writer.beginNewRow()
             try writer.write(row: header.map({ $0.name ?? "" }))
         }
         
-        for rowIndex in 0..<numberOfRows {
+        for rowIndex in 0..<rowCount {
             try writer.write(row: header.map({ data[$0]?[rowIndex] ?? "" }))
         }
+    }
+    
+    public func write(to url: URL) throws {
+        let writer = try CSVWriter(stream: try OutputStream(url: url, append: false).unwrap())
+        
+        try write(to: writer)
     }
 }
