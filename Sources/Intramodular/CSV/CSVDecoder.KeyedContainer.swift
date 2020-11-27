@@ -35,9 +35,9 @@ extension CSVDecoder._Decoder.KeyedContainer: KeyedDecodingContainerProtocol {
         }
         
         guard let unwrappedHeader = header,
-            unwrappedHeader.index < self.values.count,
-            !self.values[unwrappedHeader.index].isEmpty else {
-                return false
+              unwrappedHeader.index < self.values.count,
+              !self.values[unwrappedHeader.index].isEmpty else {
+            return false
         }
         
         return true
@@ -82,18 +82,18 @@ extension CSVDecoder._Decoder.KeyedContainer: KeyedDecodingContainerProtocol {
     }
     
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
     
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
     
     func superDecoder() throws -> Decoder  {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
     
     func superDecoder(forKey key: Key) throws -> Decoder {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
 }

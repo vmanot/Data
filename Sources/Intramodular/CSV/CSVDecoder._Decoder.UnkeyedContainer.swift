@@ -50,14 +50,14 @@ extension CSVDecoder._Decoder.UnkeyedContainer: UnkeyedDecodingContainer {
     }
     
     func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer  {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
     
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
     
     func superDecoder() throws -> Decoder {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
 }

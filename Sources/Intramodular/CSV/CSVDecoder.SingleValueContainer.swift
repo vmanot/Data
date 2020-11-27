@@ -23,14 +23,14 @@ extension CSVDecoder._Decoder {
 
 extension CSVDecoder._Decoder.SingleValueContainer: SingleValueDecodingContainer {
     func decodeNil() -> Bool {
-        TODO.unimplemented
+        return false
     }
     
     func decode<T>(_ type: T.Type) throws -> T where T: Decodable {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
     
     func decode<T>(_ type: T.Type) throws -> T where T: Decodable, T: LosslessStringConvertible  {
-        TODO.unimplemented
+        throw Never.Reason.irrational
     }
 }

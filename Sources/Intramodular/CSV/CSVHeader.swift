@@ -14,7 +14,7 @@ public struct CSVColumnHeader: Codable {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension CSVColumnHeader: Comparable {
     public static func < (lhs: Self, rhs: Self) -> Bool {

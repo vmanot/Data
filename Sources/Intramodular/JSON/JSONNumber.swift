@@ -142,7 +142,7 @@ extension JSONNumber {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension JSONNumber: Comparable {
     public static func < (lhs: JSONNumber, rhs: JSONNumber) -> Bool {

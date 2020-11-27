@@ -4,9 +4,10 @@
 
 import Compute
 import Swallow
-import Swift
+import SwiftUI
+import UniformTypeIdentifiers
 
-public struct CSV: AnyProtocol {
+public struct CSV {
     public private(set) var header: [CSVColumnHeader] = [] {
         didSet {
             for column in header {
@@ -16,6 +17,7 @@ public struct CSV: AnyProtocol {
             }
         }
     }
+    
     private var nameToColumnMap: [String: CSVColumnHeader] = [:]
     private var data: [CSVColumnHeader: [String]] = [:]
     
@@ -91,6 +93,12 @@ extension CSV {
         }
     }
     
+    public mutating func appendRow(_ row: [String: String]) {
+        for column in header {
+            data[column]!.append(row[column.name!] ?? "")
+        }
+    }
+    
     @discardableResult
     public mutating func appendColumn(named headerName: String? = nil) -> CSVColumnHeader {
         let columnHeader = CSVColumnHeader(index: header.indices.last.map({ $0 + 1 }) ?? 0, name: headerName)
@@ -116,7 +124,7 @@ extension CSV {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension CSV: Collection {
     public var isEmpty: Bool {
@@ -137,6 +145,34 @@ extension CSV: Collection {
     
     public subscript(position: Int) -> [String] {
         data[columnHeader(at: position)]!
+    }
+}
+
+extension CSV: FileDocument {
+    public static var readableContentTypes: [UTType] {
+        [.commaSeparatedText]
+    }
+    
+    public init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        
+        self.init()
+        
+        try read(from: data.toUTF8String().unwrap())
+    }
+    
+    public func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        do {
+            let stream = OutputStream(toMemory: ())
+            
+            try write(to: .init(stream: stream))
+            
+            return try FileWrapper(regularFileWithContents: stream.dataWrittenToMemoryStream.unwrap())
+        } catch {
+            throw CocoaError(.fileReadCorruptFile)
+        }
     }
 }
 
@@ -231,11 +267,21 @@ extension CSV {
     }
     
     public mutating func read(
-        from url: URL,
+        from string: String,
         encoding: String.Encoding = .utf8,
         hasHeaderRow: Bool = true
     ) throws {
-        let reader = try CSVReader(string: String(contentsOf: url, encoding: encoding), hasHeaderRow: hasHeaderRow)
+        let reader = try CSVReader(string: string, hasHeaderRow: hasHeaderRow)
+        
+        read(from: reader)
+    }
+    
+    public mutating func read(
+        from urlRepresentable: URLRepresentable,
+        encoding: String.Encoding = .utf8,
+        hasHeaderRow: Bool = true
+    ) throws {
+        let reader = try CSVReader(string: String(contentsOf: urlRepresentable, encoding: encoding), hasHeaderRow: hasHeaderRow)
         
         read(from: reader)
     }
@@ -251,8 +297,8 @@ extension CSV {
         }
     }
     
-    public func write(to url: URL) throws {
-        let writer = try CSVWriter(stream: try OutputStream(url: url, append: false).unwrap())
+    public func write(to urlRepresentable: URLRepresentable) throws {
+        let writer = try CSVWriter(stream: try OutputStream(url: urlRepresentable, append: false).unwrap())
         
         try write(to: writer)
     }

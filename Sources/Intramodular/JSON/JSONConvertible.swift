@@ -9,7 +9,7 @@ protocol JSONConvertible {
     func json() throws -> JSON
 }
 
-// MARK: - Concrete Implementations -
+// MARK: - Conformances -
 
 extension Array: JSONConvertible {
     @usableFromInline

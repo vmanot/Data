@@ -40,7 +40,7 @@ internal class BinaryReader {
         
         var position = 0
         
-        if let (e, l) = Unicode.ByteOrderMark.readBOM(buffer: _buffer, count: _count) {
+        if let (e, l) = Unicode.ByteOrderMark.readByteOrderMark(from: _buffer, count: _count) {
             if endian != .unknown && endian != e {
                 throw CSV.Error.stringEndianMismatch
             }

@@ -4,6 +4,8 @@
 
 import Foundation
 import Swallow
+import SwiftUI
+import UniformTypeIdentifiers
 
 public enum JSON: Hashable, Initiable {
     case null
@@ -102,7 +104,7 @@ extension JSON {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension JSON: Codable {
     public func encode(to encoder: Encoder) throws {
@@ -288,7 +290,7 @@ extension JSON: Equatable {
                 return x == y
             case (.dictionary(let x), .dictionary(let y)):
                 return x == y
-            
+                
             default:
                 return false
         }
@@ -334,6 +336,28 @@ extension JSON: ExpressibleByNilLiteral {
 extension JSON: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self = .string(value)
+    }
+}
+
+extension JSON: FileDocument {
+    public static var readableContentTypes: [UTType] {
+        [.json]
+    }
+    
+    public init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        
+        try self.init(data: data)
+    }
+    
+    public func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        do {
+            return try FileWrapper(regularFileWithContents: data())
+        } catch {
+            throw CocoaError(.fileReadCorruptFile)
+        }
     }
 }
 
