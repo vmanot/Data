@@ -4,7 +4,9 @@
 
 import Foundation
 import Swallow
+#if canImport(SwiftUI)
 import SwiftUI
+#endif
 import UniformTypeIdentifiers
 
 public enum JSON: Hashable, Initiable {
@@ -339,6 +341,7 @@ extension JSON: ExpressibleByStringLiteral {
     }
 }
 
+#if canImport(SwiftUI)
 extension JSON: FileDocument {
     public static var readableContentTypes: [UTType] {
         [.json]
@@ -360,6 +363,7 @@ extension JSON: FileDocument {
         }
     }
 }
+#endif
 
 // MARK: - Auxiliary Extensions -
 
