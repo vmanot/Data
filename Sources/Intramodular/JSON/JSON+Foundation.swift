@@ -11,7 +11,7 @@ extension JSON {
             self = .null
             return
         }
-
+        
         self = try JSONDecoder().decode(JSON.self, from: data, allowFragments: true)
     }
     
@@ -49,7 +49,7 @@ extension Data {
             self = try JSONEncoder().encode(json)
         }
     }
-
+    
     public func toJSON() throws -> JSON {
         return try JSONDecoder().decode(JSON.self, from: self, allowFragments: true)
     }
