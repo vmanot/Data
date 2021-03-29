@@ -124,7 +124,7 @@ extension CSV {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension CSV: Collection {
     public var isEmpty: Bool {

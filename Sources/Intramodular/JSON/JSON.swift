@@ -106,7 +106,7 @@ extension JSON {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension JSON: Codable {
     public func encode(to encoder: Encoder) throws {
