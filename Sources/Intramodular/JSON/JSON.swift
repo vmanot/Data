@@ -533,14 +533,27 @@ extension JSON {
         }
     }
     
-    public func decode<T: Decodable>(_ type: T.Type = T.self) throws -> T {
+    public func decode<T: Decodable>(
+        _ type: T.Type = T.self,
+        dateDecodingStrategy: JSONDecoder.DateDecodingStrategy? = nil,
+        dataDecodingStrategy: JSONDecoder.DataDecodingStrategy? = nil,
+        keyDecodingStrategy: JSONDecoder.KeyDecodingStrategy? = nil,
+        nonConformingFloatDecodingStrategy: JSONDecoder.NonConformingFloatDecodingStrategy? = nil
+    ) throws -> T {
         if self == .null {
             if let type = type as? ExpressibleByNilLiteral.Type {
                 return type.init(nilLiteral: ()) as! T
             }
         }
         
-        return try JSONDecoder().decode(T.self, from: try Data(json: self), allowFragments: true)
+        let decoder = JSONDecoder(
+            dateDecodingStrategy: dateDecodingStrategy,
+            dataDecodingStrategy: dataDecodingStrategy,
+            keyDecodingStrategy: keyDecodingStrategy,
+            nonConformingFloatDecodingStrategy: nonConformingFloatDecodingStrategy
+        )
+
+        return try decoder.decode(T.self, from: try Data(json: self), allowFragments: true)
     }
     
     public init(jsonString string: String) throws {
