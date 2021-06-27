@@ -516,6 +516,16 @@ extension JSON {
             }
         }
     }
+    
+    public var arrayOrDictionaryValue: Either<[JSON], [String: JSON]>? {
+        if case .array(let value) = self {
+            return .left(value)
+        } else if case .dictionary(let value) = self {
+            return .right(value)
+        } else {
+            return nil
+        }
+    }
 }
 
 extension JSON {

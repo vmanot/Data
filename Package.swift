@@ -18,7 +18,8 @@ let package = Package(
         .package(url: "https://github.com/vmanot/FoundationX.git", .branch("master")),
         .package(url: "https://github.com/vmanot/Merge.git", .branch("master")),
         .package(url: "https://github.com/vmanot/Runtime.git", .branch("master")),
-        .package(url: "https://github.com/vmanot/Swallow.git", .branch("master"))
+        .package(url: "https://github.com/vmanot/Swallow.git", .branch("master")),
+        .package(url: "https://github.com/vmanot/SwiftUIX.git", .branch("master"))
     ],
     targets: [
         .target(
@@ -28,7 +29,8 @@ let package = Package(
                 "FoundationX",
                 "Merge",
                 "Runtime",
-                "Swallow"
+                "Swallow",
+                "SwiftUIX"
             ],
             path: "Sources"
         )

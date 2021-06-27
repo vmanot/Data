@@ -43,7 +43,9 @@ public final class CSVDecoder: TopLevelDecoder {
     }
     
     public func decode<T: Decodable>(_ type: T.Type, from string: String) throws -> T {
-        var rows = string.split(separator: "\n")
+        var rows = string.contains("\r\n")
+        ? string.split(separator: "\r\n")
+        : string.split(separator: "\n")
         
         let headers = rows
             .removeFirst()
